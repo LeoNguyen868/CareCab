@@ -18,6 +18,7 @@ import {
   SegmentedButtons,
   IconButton,
   Surface,
+  Card,
 } from 'react-native-paper';
 
 const { width, height } = Dimensions.get('window');
@@ -27,15 +28,13 @@ const NotificationItem = ({ notification, onPress }) => {
   const theme = useTheme();
   
   return (
-    <>
-      <List.Item
-        title={notification.title}
-        description={notification.description}
-        left={props => (
+    <Card style={styles.notificationCard}>
+      <Card.Content style={styles.notificationContent}>
+        <View style={styles.notificationHeader}>
           <View style={styles.avatarContainer}>
-            <Avatar.Text
-              size={48}
-              label={notification.avatar}
+            <Avatar.Icon
+              size={40}
+              icon={notification.icon}
               style={[
                 styles.avatar,
                 { backgroundColor: notification.unread ? theme.colors.primary : theme.colors.surfaceVariant }
@@ -43,29 +42,23 @@ const NotificationItem = ({ notification, onPress }) => {
             />
             {notification.unread && <Badge style={styles.badge} />}
           </View>
-        )}
-        right={props => (
-          <View style={styles.rightContent}>
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>{notification.title}</Text>
+            <Text style={styles.description}>{notification.description}</Text>
             <Text style={styles.timeText}>{notification.time}</Text>
-            {notification.action && (
-              <Button
-                mode="contained"
-                onPress={onPress}
-                style={styles.actionButton}
-                labelStyle={styles.actionButtonLabel}
-              >
-                {notification.action}
-              </Button>
-            )}
           </View>
+        </View>
+        {notification.action && (
+          <Button
+            mode="contained"
+            onPress={onPress}
+            style={styles.actionButton}
+          >
+            {notification.action}
+          </Button>
         )}
-        style={[
-          styles.notificationItem,
-          { backgroundColor: notification.unread ? '#edf3ff' : 'white' }
-        ]}
-      />
-      <Divider />
-    </>
+      </Card.Content>
+    </Card>
   );
 };
 
@@ -84,8 +77,97 @@ const Notification1 = ({ navigation }) => {
   const [filter, setFilter] = useState('all');
   const theme = useTheme();
 
-  // For testing, set this to empty array to see empty state
-  const notifications = [];
+  const notifications = [
+    {
+      id: '1',
+      title: 'Xác nhận lịch hẹn',
+      description: 'Lịch hẹn với Bác sĩ Sarah Johnson vào ngày 20/01/2024 lúc 10:00 đã được xác nhận',
+      icon: 'calendar-check',
+      time: '5 phút trước',
+      unread: true,
+      action: 'Xem chi tiết'
+    },
+    {
+      id: '2',
+      title: 'Nhắc nhở cuộc hẹn',
+      description: 'Bạn có cuộc hẹn với Bác sĩ John Smith vào ngày mai lúc 9:00',
+      icon: 'clock-alert',
+      time: '1 giờ trước',
+      unread: true,
+      action: 'Xác nhận'
+    },
+    {
+      id: '3',
+      title: 'Kết quả xét nghiệm',
+      description: 'Kết quả xét nghiệm của bạn đã có. Vui lòng kiểm tra.',
+      icon: 'file-document',
+      time: '2 giờ trước',
+      unread: true,
+      action: 'Xem kết quả'
+    },
+    {
+      id: '4',
+      title: 'Đánh giá dịch vụ',
+      description: 'Hãy đánh giá trải nghiệm khám bệnh của bạn với Bác sĩ Sarah Johnson',
+      icon: 'star',
+      time: '1 ngày trước',
+      unread: false,
+      action: 'Đánh giá'
+    },
+    // Thêm các thông báo đã đọc
+    {
+      id: '5',
+      title: 'Lời nhắc uống thuốc',
+      description: 'Đã đến giờ uống thuốc theo đơn của Bác sĩ Smith. Hãy uống thuốc đúng giờ nhé!',
+      icon: 'pill',
+      time: '2 ngày trước',
+      unread: false,
+      action: 'Đánh dấu đã uống'
+    },
+    {
+      id: '6',
+      title: 'Hoàn thành thanh toán',
+      description: 'Thanh toán cho cuộc hẹn ngày 15/01/2024 đã được xác nhận. Cảm ơn bạn!',
+      icon: 'credit-card-check',
+      time: '3 ngày trước',
+      unread: false
+    },
+    {
+      id: '7',
+      title: 'Tư vấn sức khỏe',
+      description: 'Bác sĩ David Brown đã trả lời câu hỏi của bạn về chế độ ăn uống',
+      icon: 'message-reply',
+      time: '4 ngày trước',
+      unread: false,
+      action: 'Xem trả lời'
+    },
+    {
+      id: '8',
+      title: 'Cập nhật hồ sơ',
+      description: 'Hồ sơ sức khỏe của bạn đã được cập nhật với kết quả khám mới nhất',
+      icon: 'folder-check',
+      time: '5 ngày trước',
+      unread: false,
+      action: 'Xem hồ sơ'
+    },
+    {
+      id: '9',
+      title: 'Chương trình khám sức khỏe',
+      description: 'Gói khám sức khỏe tổng quát đang giảm 30% trong tháng này',
+      icon: 'percent',
+      time: '6 ngày trước',
+      unread: false,
+      action: 'Tìm hiểu thêm'
+    },
+    {
+      id: '10',
+      title: 'Thay đổi lịch hẹn',
+      description: 'Lịch hẹn của bạn đã được dời từ 9:00 sang 10:30 theo yêu cầu',
+      icon: 'calendar-edit',
+      time: '1 tuần trước',
+      unread: false
+    }
+  ];
 
   const filteredNotifications = filter === 'all' 
     ? notifications 
@@ -123,7 +205,7 @@ const Notification1 = ({ navigation }) => {
               <NotificationItem
                 key={notification.id}
                 notification={notification}
-                onPress={notification.onPress || (() => {})}
+                onPress={() => {}}
               />
             ))}
           </ScrollView>
@@ -146,40 +228,52 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    padding: 16,
   },
-  notificationItem: {
-    paddingVertical: scale(12),
+  notificationCard: {
+    marginBottom: 8,
+    elevation: 2,
+  },
+  notificationContent: {
+    padding: 12,
+  },
+  notificationHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   avatarContainer: {
-    marginLeft: scale(16),
-    marginRight: scale(8),
-    justifyContent: 'center',
+    position: 'relative',
+    marginRight: 12,
   },
   avatar: {
-    marginVertical: scale(8),
+    backgroundColor: '#4CAF50',
   },
   badge: {
     position: 'absolute',
-    bottom: scale(8),
-    right: 0,
-    backgroundColor: '#4CAF50',
+    top: -4,
+    right: -4,
+    backgroundColor: '#f44336',
   },
-  rightContent: {
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    paddingRight: scale(16),
-    height: '100%',
+  textContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
   },
   timeText: {
-    fontSize: scale(12),
-    color: '#666',
-    marginBottom: scale(4),
+    fontSize: 12,
+    color: '#999',
   },
   actionButton: {
-    marginTop: scale(8),
-  },
-  actionButtonLabel: {
-    fontSize: scale(12),
+    marginTop: 8,
+    alignSelf: 'flex-end',
   },
   emptyContainer: {
     flex: 1,

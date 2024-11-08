@@ -23,8 +23,6 @@ const LoginFrame = () => {
     try {
       const response = await loginUser(username, password);
       console.log(response)
-      // Điều hướng tới màn hình "MainFrame" sau khi đăng nhập thành công
-      //navigation.navigate("MainFrame");
       navigation.navigate('MainScreen', {userData: response.data});
     } catch (error) {
       setError("Tài khoản hoặc mật khẩu không đúng");

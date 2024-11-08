@@ -17,6 +17,28 @@ class AvailabilityCheck(BaseModel):
 
 @router.post("/available-nurses")
 async def get_available_nurses(availability: AvailabilityCheck):
+    # Check if requested date/time is in the past
+    current_datetime = datetime.now(timezone.utc)
+    requested_datetime = datetime.combine(
+        availability.date,
+        availability.time,
+        tzinfo=timezone.utc
+    )
+    
+    if requested_datetime < current_datetime:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot check availability for past date/time"
+        )
+    
+    # Check if booking is at least 2 hours in advance
+    time_difference = requested_datetime - current_datetime
+    if time_difference.total_seconds() < 7200:  # 7200 seconds = 2 hours
+        raise HTTPException(
+            status_code=400,
+            detail="Appointments must be booked at least 2 hours in advance"
+        )
+
     # First get all busy nurse IDs
     busy_nurses = await Appointment.filter(
         date=availability.date,
@@ -38,6 +60,28 @@ async def get_available_nurses(availability: AvailabilityCheck):
 
 @router.post("/", response_model=AppointmentOut)
 async def create_appointment(appointment: AppointmentCreate):
+    # Check if appointment time is in the past
+    current_datetime = datetime.now(timezone.utc)
+    appointment_datetime = datetime.combine(
+        appointment.date,
+        appointment.time,
+        tzinfo=timezone.utc
+    )
+    
+    if appointment_datetime < current_datetime:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot create appointment in the past"
+        )
+    
+    # Check if booking is at least 2 hours in advance
+    time_difference = appointment_datetime - current_datetime
+    if time_difference.total_seconds() < 7200:  # 7200 seconds = 2 hours
+        raise HTTPException(
+            status_code=400,
+            detail="Appointments must be booked at least 2 hours in advance"
+        )
+
     # Validate patient
     patient = await Patient.get_or_none(id=appointment.patient_id)
     if not patient:

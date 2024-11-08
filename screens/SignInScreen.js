@@ -21,6 +21,8 @@ import {
   Provider as PaperProvider,
 } from 'react-native-paper';
 import { registerUser } from '../api/apis';
+import * as api from '../api/apis';
+import * as ultiAPI from '../api/ultis_api';
 import { customTheme } from '../theme';
 
 const { width, height } = Dimensions.get("window");
@@ -69,6 +71,7 @@ const SignInScreen = ({ navigation }) => {
       };
       
       const response = await registerUser(userData);
+      const r= await api.createPatient(ultiAPI.empty_patient(response.user_id));
       console.log('Registration successful:', response);
       
       Alert.alert(

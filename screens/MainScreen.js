@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
   ScrollView, 
   Dimensions,
   SafeAreaView,
-  Image 
+  Image,
+  RefreshControl,
+  ActivityIndicator 
 } from 'react-native';
 import { 
   Card, 
@@ -23,7 +25,9 @@ import {
 import CalendarScreen from './CalendarScreen';
 import ChatScreen from './ChatScreen';
 import SettingsScreen from './SettingsScreen';
-
+import AppointmentCard from '../components/AppointmentCard';
+import * as api from '../api/apis';
+import * as ultiAPI from '../api/ultis_api';
 const { width, height } = Dimensions.get('window');
 const scale = size => (width / 320) * size;
 
@@ -31,7 +35,40 @@ const MainScreen = ({ navigation, route }) => {
   const theme = useTheme();
   const userData = route.params?.userData || {};
   const [index, setIndex] = useState(0);
+  const [patientData, setPatientData] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAppointments = async () => {
+    try {
+      const data = await api.getUpcomingAppointments(userData.user_id);
+      const patient= await api.getPatientByUserId(userData.user_id);
+      setUpcomingAppointments(data);
+      setPatientData(patient);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [userData.user_id]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      console.log('Refreshing data...\n');
+      console.log(patientData);
+      await fetchAppointments();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+    setRefreshing(false);
+  }, []);
 
   const [routes] = useState([
     { key: 'home', title: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
@@ -42,12 +79,29 @@ const MainScreen = ({ navigation, route }) => {
 
   const renderScene = BottomNavigation.SceneMap({
     home: () => (
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
+        }
+      >
         {/* Upcoming Appointments Section */}
         <Card style={styles.sectionCard}>
           <Card.Content>
             <Title>Upcoming Appointments</Title>
-            <Text style={styles.noActivityText}>No upcoming appointments</Text>
+            {loading ? (
+              <ActivityIndicator style={{marginTop: 16}} />
+            ) : upcomingAppointments.length > 0 ? (
+              upcomingAppointments.map((appointment) => (
+                <AppointmentCard key={appointment.id} appointment={appointment}/>
+              ))
+            ) : (
+              <Text style={styles.noActivityText}>No upcoming appointments</Text>
+            )}
           </Card.Content>
         </Card>
 
@@ -59,7 +113,7 @@ const MainScreen = ({ navigation, route }) => {
               <Text>New Appointment</Text>
             </Card.Content>
           </Card>
-          <Card style={styles.featureCard} onPress={() => navigation.navigate('MyAppoinments')}>
+          <Card style={styles.featureCard} onPress={() => navigation.navigate('ViewAppointments',{patientData})}>
             <Card.Content style={styles.featureContent}>
               <IconButton icon="history" size={30} />
               <Text>History</Text>
@@ -87,7 +141,7 @@ const MainScreen = ({ navigation, route }) => {
         </ScrollView>
       </ScrollView>
     ),
-    calendar: () => <CalendarScreen navigation={navigation} />,
+    calendar: () => <CalendarScreen navigation={navigation} patientData={patientData}/>,
     chat: () => <ChatScreen navigation={navigation} />,
     settings: () => <SettingsScreen navigation={navigation} />
   });

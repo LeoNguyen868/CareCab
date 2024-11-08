@@ -1,31 +1,16 @@
 const Stack = createNativeStackNavigator();
 import * as React from "react";
-import * as eva from '@eva-design/eva';
-import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
-import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider as PaperProvider } from 'react-native-paper';
 import { navigationRef } from './utils/navigationUtils';
 import { customTheme } from './theme';
 
-import MainFrame from "./screens/MainFrame";
+
 import LoginFrame from "./screens/LoginFrame";
-import SelectHostpital from "./screens/SelectHostpital";
 import NewAppointment from "./screens/NewAppointment";
 import Notification1 from "./screens/Notification1";
-import Setting from "./screens/Setting";
-import DoctorsDetails from "./screens/DoctorsDetails";
-import MyAppoinments from "./screens/MyAppoinments";
-import Confirm1 from "./screens/Confirm1";
-import Chongoi from "./screens/Chongoi";
-import BasicOneTime from "./screens/BasicOneTime";
-import CTVDetails from "./screens/CTVDetails";
-import AdvanceMonth from "./screens/AdvanceMonth";
-import AdvanceOneTime from "./screens/AdvanceOneTime";
-import BasicMonth from "./screens/BasicMonth";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SignInScreen from "./screens/SignInScreen";
-import { View, Text, Pressable, TouchableOpacity } from "react-native";
 import MainScreen from "./screens/MainScreen";
 import OtpVerification from "./screens/OtpVerification";
 import ChangePassword from "./screens/ChangePassword";
@@ -34,6 +19,8 @@ import ChatScreen from "./screens/ChatScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import UserProfileScreen from "./screens/UserProfileScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
+import SelectNurse from "./screens/SelectNurse";
+import ViewAppointments from "./screens/ViewAppointments"; // Add this line
 
 export default function App() {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(true);
@@ -50,19 +37,10 @@ export default function App() {
             component={SignInScreen}
             options={{ headerShown: false }}
             />
-            <Stack.Screen
-              name="MainFrame"
-              component={MainFrame}
-              options={{ headerShown: false }}
-            />
+
             <Stack.Screen
               name="LoginFrame"
               component={LoginFrame}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="SelectHostpital"
-              component={SelectHostpital}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -75,56 +53,7 @@ export default function App() {
               component={Notification1}
               options={{ headerShown: false }}
             />
-            <Stack.Screen
-              name="Setting"
-              component={Setting}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="DoctorsDetails"
-              component={DoctorsDetails}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="CTVDetails"
-              component={CTVDetails}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="MyAppoinments"
-              component={MyAppoinments}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Confirm1"
-              component={Confirm1}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="Chongoi"
-              component={Chongoi}
-              options={{ headerShown: false }}
-              />
-              <Stack.Screen
-            name="BasicOneTime"
-            component={BasicOneTime}
-            options={{ headerShown: false }}
-            />
-            <Stack.Screen
-            name="AdvanceMonth"
-            component={AdvanceMonth}
-            options={{ headerShown: false }}
-            />
-            <Stack.Screen
-            name="AdvanceOneTime"
-            component={AdvanceOneTime}
-            options={{ headerShown: false }}
-            />
-            <Stack.Screen
-            name="BasicMonth"
-            component={BasicMonth}
-            options={{ headerShown: false }}
-            />
+
             <Stack.Screen
               name="MainScreen"
               component={MainScreen}
@@ -163,6 +92,17 @@ export default function App() {
             <Stack.Screen
               name="EditProfile"
               component={EditProfileScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SelectNurse"
+              component={SelectNurse}
+              options={{ headerShown: false }}
+            />
+
+            <Stack.Screen
+              name="ViewAppointments"
+              component={ViewAppointments}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
