@@ -1,38 +1,51 @@
-import React from 'react';
-import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { Title, Card, IconButton, Surface } from 'react-native-paper';
 import AppointmentCard from '../components/AppointmentCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as api from '../api/apis'; // Added import
 
 const { width } = Dimensions.get('window');
 
-const CalendarScreen = ({ navigation, patientData }) => {
-  // Mock data for upcoming appointments
-  const upcomingAppointments = [
-    {
-      id: 1,
-      doctorName: 'Dr. Sarah Johnson',
-      specialty: 'Cardiologist',
-      date: '2024-01-20',
-      time: '10:00 AM',
-      location: 'Heart Care Center'
-    },
-    {
-      id: 2,
-      doctorName: 'Dr. Michael Brown',
-      specialty: 'Neurologist',
-      date: '2024-01-22',
-      time: '2:30 PM',
-      location: 'Brain & Spine Center'
-    },
-    {
-      id: 3,
-      doctorName: 'Dr. Emily Wilson',
-      specialty: 'Dermatologist',
-      date: '2024-01-25',
-      time: '3:45 PM',
-      location: 'Skin Care Clinic'
+const CalendarScreen = ({ navigation }) => {
+  const [patientData, setPatientData] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true); // Added loading state
+
+  const loadStoredData = async () => {
+    try {
+      const storedPatientData = await AsyncStorage.getItem('patientData');
+      const storedAppointments = await AsyncStorage.getItem('appointments');
+      
+      if (storedPatientData) {
+        setPatientData(JSON.parse(storedPatientData));
+      }
+      if (storedAppointments) {
+        setAppointments(JSON.parse(storedAppointments));
+      }
+    } catch (error) {
+      console.error('Error loading stored data:', error);
     }
-  ];
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const data = await api.getUpcomingAppointments(patientData.user_id);
+      setAppointments(data);
+      await AsyncStorage.setItem('appointments', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStoredData();
+    if (patientData?.user_id) {
+      fetchAppointments();
+    }
+  }, [patientData?.user_id]);
 
   return (
     <View style={styles.container}>
@@ -62,25 +75,26 @@ const CalendarScreen = ({ navigation, patientData }) => {
         </Surface>
       </View>
       <Title>Upcoming Appointments</Title>
-      <ScrollView 
-            style={styles.appointmentsScrollView}
-            showsVerticalScrollIndicator={true}
-          >
-      <Card style={styles.sectionCard}>
-        <Card.Content>
-          
-          
-            {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} />
-              ))
-            ) : (
-              <Text style={styles.noActivityText}>No upcoming appointments</Text>
-            )}
-          
-        </Card.Content>
-      </Card>
-      </ScrollView>
+      {loading ? (
+        <ActivityIndicator style={{ marginTop: 16 }} />
+      ) : (
+        <ScrollView 
+          style={styles.appointmentsScrollView}
+          showsVerticalScrollIndicator={true}
+        >
+          <Card style={styles.sectionCard}>
+            <Card.Content>
+              {appointments.length > 0 ? (
+                appointments.map((appointment) => (
+                  <AppointmentCard key={appointment.id} appointment={appointment} />
+                ))
+              ) : (
+                <Text style={styles.noActivityText}>No upcoming appointments</Text>
+              )}
+            </Card.Content>
+          </Card>
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -115,7 +129,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
   },
-  // Styles copied from MainScreen
   sectionCard: {
     flex: 1,
     marginBottom: 16,

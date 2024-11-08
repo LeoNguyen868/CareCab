@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://af0e-14-162-100-30.ngrok-free.app';
+const API_BASE_URL = 'https://abad-14-162-100-30.ngrok-free.app';
 
 // Create axios instance with config
 const api = axios.create({
@@ -163,9 +163,17 @@ export const generateEmptyUserProfile = async (userId) => {
 // Appointment APIs
 export const checkAvailableNurses = async (appointmentTime) => {
   try {
+    const dateStr = appointmentTime.date instanceof Date 
+      ? appointmentTime.date.toISOString().split('T')[0]
+      : appointmentTime.date;
+    
+    const timeStr = appointmentTime.time instanceof Date
+      ? appointmentTime.time.toTimeString().split(' ')[0]
+      : appointmentTime.time;
+
     const response = await api.post('/appointments/available-nurses', {
-      date: appointmentTime.date,
-      time: appointmentTime.time
+      date: dateStr,
+      time: timeStr
     });
     return response.data;
   } catch (error) {

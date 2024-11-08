@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, SafeAreaView, Image, TextInput, ScrollView, Ref
 import { Appbar, IconButton, Title, Button as PaperButton, RadioButton } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRoute } from '@react-navigation/native';
+import { createAppointment, getPatientByUserId } from '../api/apis';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NurseItem = ({ nurse }) => {
   return (
@@ -13,28 +15,61 @@ const NurseItem = ({ nurse }) => {
       />
       <View style={styles.nurseInfo}>
         <Text style={styles.nurseName}>{nurse.fullName}</Text>
-        <Text style={styles.nurseSpecialty}>{nurse.description}</Text>
         <Text style={styles.nurseExperience}>Experience: {nurse.experience_years} years</Text>
       </View>
     </View>
   );
 };
 
-const NewAppointment = ({ navigation }) => {
+const NewAppointment = ({ navigation, route }) => {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
   const [symptoms, setSymptoms] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [vehicle, setVehicle] = useState('none'); // Add new state for vehicle selection
+  const [vehicle, setVehicle] = useState('None'); // Changed default to 'None'
   const [selectedNurse, setSelectedNurse] = useState(null);
-  const route = useRoute();
   const [refreshing, setRefreshing] = useState(false);
+  const [location, setLocation] = useState(''); // Add this line after other useState declarations
+  const [patientData, setPatientData] = useState(null);
+
+  const loadStoredData = async () => {
+    try {
+      const storedUserData = await AsyncStorage.getItem('userData');
+      const storedPatientData = await AsyncStorage.getItem('patientData');
+      
+      if (storedPatientData) {
+        const patientData = JSON.parse(storedPatientData);
+        setPatientData(patientData);
+        console.log('Loaded patient data from storage:', patientData);
+      }
+      
+      if (!storedUserData || !storedPatientData) {
+        alert('Required data not found');
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Error loading stored data:', error);
+      alert('Error loading data');
+      navigation.goBack();
+    }
+  };
+
+  // Replace existing useEffect for fetching patient data
+  React.useEffect(() => {
+    loadStoredData();
+  }, []);
+
+  // Add debug logging for selectedNurse
+  React.useEffect(() => {
+    console.log('Current selectedNurse:', selectedNurse);
+    console.log('Route params:', route.params);
+  }, [selectedNurse, route.params]);
 
   // Thêm giá ước tính mẫu
   const estimatedPrices = {
     servicePrice: 500000,
-    vehiclePrice: vehicle === 'car' ? 200000 : (vehicle === 'motorcycle' ? 100000 : 0),
+    vehiclePrice: vehicle === 'Car' ? 200000 : (vehicle === 'Motor' ? 100000 : 0),
     get total() {
       return this.servicePrice + this.vehiclePrice;
     }
@@ -74,26 +109,76 @@ const NewAppointment = ({ navigation }) => {
     const appointmentDateTime = {
       date: formatDate(date),
       time: formatTime(time)
-      
     };
-    console.log(appointmentDateTime);
-    navigation.navigate('SelectNurse', { appointmentDateTime });
+    // Pass current selectedNurse when navigating
+    navigation.navigate('SelectNurse', { 
+      appointmentDateTime,
+      currentNurse: selectedNurse // Add this
+    });
   };
 
   const resetForm = () => {
     setDate(new Date());
     setTime(new Date());
     setSymptoms('');
-    setVehicle('none');
+    setVehicle('None');
+    setLocation(''); // Add this line to reset location
+    // Do NOT reset selectedNurse here
   };
 
   const onRefresh = React.useCallback(() => {
     console.log('Refreshing data...\n');
-    console.log(selectedNurse);
+    console.log('Current nurse before refresh:', selectedNurse);
     setRefreshing(true);
     resetForm();
+    // Re-fetch patient data only
+    const fetchPatientData = async () => {
+      try {
+        const userId = route.params?.userData.user_id;
+        if (userId) {
+          const response = await getPatientByUserId(userId);
+          setPatientData(response);
+        }
+      } catch (error) {
+        console.error('Error refreshing patient data:', error);
+      }
+    };
+    fetchPatientData();
+    console.log('Current nurse after refresh:', selectedNurse);
     setRefreshing(false);
-  }, []);
+  }, [selectedNurse]); // Add selectedNurse to dependency array
+
+  const handleSubmit = async () => {
+    if (!selectedNurse) {
+      alert('Please select a nurse');
+      return;
+    }
+
+    if (!patientData) {
+      alert('Patient data not found');
+      return;
+    }
+
+    const appointmentData = {
+      patient_id: patientData.id, // This should now work as the ID is at root level
+      nurse_id: selectedNurse.nurse_id,
+      date: formatDate(date),
+      time: formatTime(time),
+      location: location,
+      symptoms: symptoms,
+      transportation: vehicle // This now matches the API requirements
+    };
+
+    console.log('Submitting appointment data:', appointmentData);
+
+    try {
+      const response = await createAppointment(appointmentData);
+      alert('Appointment created successfully!');
+      navigation.goBack();
+    } catch (error) {
+      alert('Failed to create appointment: ' + error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,6 +218,12 @@ const NewAppointment = ({ navigation }) => {
             onPressIn={() => setShowTimePicker(true)}
           />
           <TextInput
+            style={styles.input}
+            placeholder="Enter Location"
+            value={location}
+            onChangeText={setLocation}
+          />
+          <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Describe Symptoms"
             value={symptoms}
@@ -161,27 +252,27 @@ const NewAppointment = ({ navigation }) => {
             <View style={styles.radioGroup}>
               <View style={styles.radioButton}>
                 <RadioButton
-                  value="none"
-                  status={vehicle === 'none' ? 'checked' : 'unchecked'}
-                  onPress={() => setVehicle('none')}
+                  value="None"
+                  status={vehicle === 'None' ? 'checked' : 'unchecked'}
+                  onPress={() => setVehicle('None')}
                 />
                 <Text>None</Text>
               </View>
               <View style={styles.radioButton}>
                 <RadioButton
-                  value="car"
-                  status={vehicle === 'car' ? 'checked' : 'unchecked'}
-                  onPress={() => setVehicle('car')}
+                  value="Car"
+                  status={vehicle === 'Car' ? 'checked' : 'unchecked'}
+                  onPress={() => setVehicle('Car')}
                 />
                 <Text>Car</Text>
               </View>
               <View style={styles.radioButton}>
                 <RadioButton
-                  value="motorcycle"
-                  status={vehicle === 'motorcycle' ? 'checked' : 'unchecked'}
-                  onPress={() => setVehicle('motorcycle')}
+                  value="Motor"
+                  status={vehicle === 'Motor' ? 'checked' : 'unchecked'}
+                  onPress={() => setVehicle('Motor')}
                 />
-                <Text>Motorcycle</Text>
+                <Text>Motor</Text>
               </View>
             </View>
           </View>
@@ -209,7 +300,7 @@ const NewAppointment = ({ navigation }) => {
                 <Text>Service Fee:</Text>
                 <Text>{estimatedPrices.servicePrice.toLocaleString()} VND</Text>
               </View>
-              {vehicle !== 'none' && (
+              {vehicle !== 'None' && (
                 <View style={styles.priceRow}>
                   <Text>Vehicle Fee ({vehicle}):</Text>
                   <Text>{estimatedPrices.vehiclePrice.toLocaleString()} VND</Text>
@@ -222,7 +313,7 @@ const NewAppointment = ({ navigation }) => {
             </View>
           </View>
 
-          <PaperButton mode="contained" onPress={() => { /* handle submit */ }}>
+          <PaperButton mode="contained" onPress={handleSubmit}>
             Submit
           </PaperButton>
         </View>

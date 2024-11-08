@@ -12,7 +12,7 @@ const NurseItem = ({ nurse, onSelect }) => {
       />
       <View style={styles.nurseInfo}>
         <Text style={styles.nurseName}>{nurse.fullName}</Text>
-        <Text style={styles.nurseSpecialty}>{nurse.bio || nurse.specialization}</Text>
+        <Text style={styles.nurseSpecialty}>{ nurse.description || nurse.specialization}</Text>
         <Text style={styles.nurseExperience}>Experience: {nurse.experience_years} years</Text>
       </View>
     </TouchableOpacity>
@@ -108,6 +108,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     backgroundColor: '#fff',
+    alignItems: 'center', // Center items vertically
+    minHeight: 80, // Ensure minimum height for the card
   },
   nurseAvatar: {
     width: 50,
@@ -117,6 +119,7 @@ const styles = StyleSheet.create({
   nurseInfo: {
     marginLeft: 10,
     justifyContent: 'center',
+    flex: 1, // Add this to allow content to take remaining space
   },
   nurseName: {
     fontSize: 16,
@@ -125,6 +128,8 @@ const styles = StyleSheet.create({
   nurseSpecialty: {
     fontSize: 14,
     color: '#666',
+    flexWrap: 'wrap', // Add text wrapping
+    marginTop: 4, // Add some spacing
   },
   loadingContainer: {
     flex: 1,

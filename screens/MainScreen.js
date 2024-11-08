@@ -28,12 +28,13 @@ import SettingsScreen from './SettingsScreen';
 import AppointmentCard from '../components/AppointmentCard';
 import * as api from '../api/apis';
 import * as ultiAPI from '../api/ultis_api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width, height } = Dimensions.get('window');
 const scale = size => (width / 320) * size;
 
 const MainScreen = ({ navigation, route }) => {
   const theme = useTheme();
-  const userData = route.params?.userData || {};
+  const [userData, setUserData] = useState(route.params?.userData || {});
   const [index, setIndex] = useState(0);
   const [patientData, setPatientData] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,12 +42,43 @@ const MainScreen = ({ navigation, route }) => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const storeData = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem(key, jsonValue);
+    } catch (error) {
+      console.error('Error storing data:', error);
+    }
+  };
+
+  const loadData = async () => {
+    try {
+      const storedUserData = await AsyncStorage.getItem('userData');
+      const storedPatientData = await AsyncStorage.getItem('patientData');
+      const storedAppointments = await AsyncStorage.getItem('appointments');
+
+      if (storedUserData) setUserData(JSON.parse(storedUserData));
+      if (storedPatientData) setPatientData(JSON.parse(storedPatientData));
+      if (storedAppointments) setUpcomingAppointments(JSON.parse(storedAppointments));
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
   const fetchAppointments = async () => {
     try {
       const data = await api.getUpcomingAppointments(userData.user_id);
-      const patient= await api.getPatientByUserId(userData.user_id);
-      setUpcomingAppointments(data);
+      const patient = await api.getPatientByUserId(userData.user_id);
+      // Sort appointments by date and take the latest one
+      const sortedAppointments = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const latestAppointment = sortedAppointments.length > 0 ? [sortedAppointments[0]] : [];
+      setUpcomingAppointments(latestAppointment);
       setPatientData(patient);
+      
+      // Store data locally
+      await storeData('userData', userData);
+      await storeData('patientData', patient);
+      await storeData('appointments', latestAppointment);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -55,7 +87,12 @@ const MainScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    // Load local data first
+    loadData();
+    // Then fetch fresh data
+    if (userData.user_id) {
+      fetchAppointments();
+    }
   }, [userData.user_id]);
 
   const onRefresh = useCallback(async () => {
@@ -92,13 +129,11 @@ const MainScreen = ({ navigation, route }) => {
         {/* Upcoming Appointments Section */}
         <Card style={styles.sectionCard}>
           <Card.Content>
-            <Title>Upcoming Appointments</Title>
+            <Title>Latest Appointment</Title>
             {loading ? (
               <ActivityIndicator style={{marginTop: 16}} />
             ) : upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment}/>
-              ))
+              <AppointmentCard appointment={upcomingAppointments[0]}/>
             ) : (
               <Text style={styles.noActivityText}>No upcoming appointments</Text>
             )}
@@ -107,7 +142,7 @@ const MainScreen = ({ navigation, route }) => {
 
         {/* Main Features Grid */}
         <View style={styles.featuresGrid}>
-          <Card style={styles.featureCard} onPress={() => navigation.navigate('NewAppointment')}>
+          <Card style={styles.featureCard} onPress={() => navigation.navigate('NewAppointment',{userData})}>
             <Card.Content style={styles.featureContent}>
               <IconButton icon="calendar-plus" size={30} />
               <Text>New Appointment</Text>

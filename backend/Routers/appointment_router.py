@@ -43,7 +43,7 @@ async def get_available_nurses(availability: AvailabilityCheck):
     busy_nurses = await Appointment.filter(
         date=availability.date,
         time=availability.time,
-        status__in=["pending", "confirmed",'']
+        status__in=["pending", "nurseConfirmed", "started"]
     ).values_list('nurse_id', flat=True)
     
     # Then query available nurses
