@@ -9,7 +9,7 @@ models = [User, UserProfile, Nurse, Patient, Appointment, Notification]
 
 async def init_orm(force_recreate=False):
     await Tortoise.init(
-        db_url="postgres://postgres:613840()Hhb@localhost:5432/CareCab",
+        db_url="postgres://u1vh8elllen73u:p3ac7e33c53de5e116c89f15035cddebe5fee434ee565fe80d5a6e23382dae1d8@c67okggoj39697.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d600hjaute3djt",
         modules={
             'models': ['ORMModels.users', 'ORMModels.appointments', 'ORMModels.notification']
         }
