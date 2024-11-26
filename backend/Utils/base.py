@@ -6,12 +6,6 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 #utils
-from pyngrok import ngrok
-ngrok.set_auth_token("2awu4Lm0AqpUe8AuYvTOZuPuy0S_3FkSJGa64yxZHkFoam87J")
-def start_ngrok():
-    public_url = ngrok.connect(8000)
-    print("Ngrok tunnel \"{}\" -> \"http://localhost:8000\"".format(public_url))
-    return public_url
 #email
 def send_otp_email(receiver_email):
     sender_email = "hieu76540@gmail.com"

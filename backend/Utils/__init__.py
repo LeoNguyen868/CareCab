@@ -1,3 +1,3 @@
-from .base import start_ngrok, send_otp_email
+from .base import send_otp_email
 
-__all__ = ['start_ngrok', 'send_otp_email']
+__all__ = [ 'send_otp_email']
