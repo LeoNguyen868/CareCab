@@ -27,7 +27,7 @@ connected_clients = []
 # Class Pydantic cho User
 
 async def listen_to_db():
-    conn = await asyncpg.connect(dsn="postgres://ufffcvkhl2jv9b:p79359a2469a6dfd273026b10c2fbfb570f79e4f5b58fe35ac0d07120d49e6f42@c1v04v8krpfbct.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dbc6ll7ic046qb")
+    conn = await asyncpg.connect(dsn="postgres://postgres:Tih%23081844@host.docker.internal:5432/hihi")
     await conn.add_listener("appointments_channel", handle_notification)
     while True:
         await asyncio.sleep(1)

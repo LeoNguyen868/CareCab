@@ -7,9 +7,11 @@ from ORMModels.notification import *
 # List all models for easy access
 models = [User, UserProfile, Nurse, Patient, Appointment, Notification]
 
+DATABASE_URL = "postgres://postgres:Tih%23081844@host.docker.internal:5432/hihi"
+
 async def init_orm(force_recreate=False):
     await Tortoise.init(
-        db_url=":))",
+        db_url=DATABASE_URL,
         modules={
             'models': ['ORMModels.users', 'ORMModels.appointments', 'ORMModels.notification']
         }
