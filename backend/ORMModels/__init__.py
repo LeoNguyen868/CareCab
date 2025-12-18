@@ -1,5 +1,10 @@
 from tortoise import Tortoise
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Import models using absolute imports
 from ORMModels.users import *
 from ORMModels.appointments import *
@@ -7,7 +12,7 @@ from ORMModels.notification import *
 # List all models for easy access
 models = [User, UserProfile, Nurse, Patient, Appointment, Notification]
 
-DATABASE_URL = "postgres://postgres:Tih%23081844@host.docker.internal:5432/hihi"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 async def init_orm(force_recreate=False):
     await Tortoise.init(

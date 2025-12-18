@@ -1,4 +1,6 @@
 #import nest_asyncio
+from dotenv import load_dotenv
+load_dotenv()
 import sys
 import os
 import asyncio
@@ -27,7 +29,7 @@ connected_clients = []
 # Class Pydantic cho User
 
 async def listen_to_db():
-    conn = await asyncpg.connect(dsn="postgres://postgres:Tih%23081844@host.docker.internal:5432/hihi")
+    conn = await asyncpg.connect(dsn=os.getenv("DATABASE_URL"))
     await conn.add_listener("appointments_channel", handle_notification)
     while True:
         await asyncio.sleep(1)
