@@ -15,6 +15,21 @@ class AvailabilityCheck(BaseModel):
     date: date
     time: time
 
+class AppointmentListResponse(BaseModel):
+    id: int
+    patient_id: int
+    date: date
+    time: time
+    status: str
+    symptoms: str
+    
+    class Config:
+        orm_mode = True
+
+@router.get("/", response_model=List[AppointmentListResponse])
+async def get_all_appointments():
+    return await Appointment.all()
+
 @router.post("/available-nurses")
 async def get_available_nurses(availability: AvailabilityCheck):
     # Check if requested date/time is in the past

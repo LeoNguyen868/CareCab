@@ -4,9 +4,10 @@ from pydanticModels.base import (
     UserCreate, 
     UserProfileOut, 
     UserProfileCreate, 
-    UserProfileUpdate
+    UserProfileUpdate,
+    PatientOut
 )
-from ORMModels.users import User, UserProfile
+from ORMModels.users import Patient, User, UserProfile
 from typing import List
 
 router = APIRouter()
@@ -14,6 +15,13 @@ router = APIRouter()
 @router.get("/", response_model=List[UserOut])
 async def get_users():
     return await User.all()
+
+@router.get("/by-patient/{patient_id}", response_model=PatientOut)
+async def get_patient_by_patient(patient_id: int):
+    patient = await Patient.get_or_none(id=patient_id).prefetch_related("user")
+    if patient is None:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return patient
 
 @router.get("/{user_id}", response_model=UserOut)
 async def get_user(user_id: int):
@@ -94,4 +102,3 @@ async def delete_user_profile(user_id: int):
     
     await profile.delete()
     return {"message": "Profile deleted"}
-
