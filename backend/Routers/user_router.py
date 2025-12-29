@@ -30,6 +30,16 @@ async def get_user(user_id: int):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@router.post("/validate")
+async def validate_user_registration(user: UserCreate):
+    if await User.exists(username=user.username):
+        raise HTTPException(status_code=400, detail="Tên đăng nhập đã tồn tại")
+    
+    if await User.exists(email=user.email):
+        raise HTTPException(status_code=400, detail="Email đã được sử dụng")
+        
+    return {"message": "Validation successful"}
+
 @router.post("/", response_model=UserOut)
 async def create_user(user: UserCreate):
     new_user = await User.create(**user.dict())
