@@ -6,6 +6,8 @@ from ORMModels.appointments import Appointment
 from ORMModels.users import Nurse, Patient, User
 from tortoise.expressions import Q
 from pydanticModels import *
+from enums import AppointmentStatus
+
 router = APIRouter()
 
 # Pydantic models for request/response
@@ -58,7 +60,11 @@ async def get_available_nurses(availability: AvailabilityCheck):
     busy_nurses = await Appointment.filter(
         date=availability.date,
         time=availability.time,
-        status__in=["pending", "nurseConfirmed", "started"]
+        status__in=[
+            AppointmentStatus.PENDING,
+            AppointmentStatus.NURSE_CONFIRMED,
+            AppointmentStatus.STARTED
+        ]
     ).values_list('nurse_id', flat=True)
     
     # Then query available nurses
@@ -129,7 +135,11 @@ async def create_appointment(appointment: AppointmentCreate):
         nurse_id=appointment.nurse_id,
         date=appointment.date,
         time=appointment.time,
-        status__in=["pending", "nurseConfirmed", "started"]
+        status__in=[
+            AppointmentStatus.PENDING,
+            AppointmentStatus.NURSE_CONFIRMED,
+            AppointmentStatus.STARTED
+        ]
     )
     if existing_appointment:
         raise HTTPException(
@@ -152,7 +162,7 @@ async def create_appointment(appointment: AppointmentCreate):
         symptoms=appointment.symptoms,
         transportation=appointment.transportation,
         estimated_cost=total_cost,
-        status="pending"
+        status=AppointmentStatus.PENDING
     )
     
     return new_appointment
@@ -166,13 +176,13 @@ async def nurse_confirm_appointment(appointment_id: int, nurse_id: int):
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if appointment.status != "pending":
+    if appointment.status != AppointmentStatus.PENDING:
         raise HTTPException(
             status_code=400,
             detail="Can only confirm pending appointments"
         )
     
-    appointment.status = "nurseConfirmed"
+    appointment.status = AppointmentStatus.NURSE_CONFIRMED
     await appointment.save()
     return {"message": "Appointment confirmed by nurse"}
 
@@ -185,14 +195,14 @@ async def start_service(appointment_id: int, nurse_id: int):
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if appointment.status != "nurseConfirmed":
+    if appointment.status != AppointmentStatus.NURSE_CONFIRMED:
         raise HTTPException(
             status_code=400,
             detail="Can only start confirmed appointments"
         )
     
     appointment.startAt = datetime.now()
-    appointment.status = "started"
+    appointment.status = AppointmentStatus.STARTED
     await appointment.save()
     return {"message": "Service started"}
 @router.post("/{appointment_id}/stop-service")
@@ -204,14 +214,14 @@ async def stop_service(appointment_id: int, nurse_id: int):
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if appointment.status != "started":
+    if appointment.status != AppointmentStatus.STARTED:
         raise HTTPException(
             status_code=400,
             detail="Can only stop started appointments"
         )
     
     appointment.endAt = datetime.now()
-    appointment.status = "stopped"
+    appointment.status = AppointmentStatus.STOPPED
     await appointment.save()
     return {"message": "Service stopped"}
 
@@ -224,13 +234,13 @@ async def complete_appointment(appointment_id: int, patient_id: int):
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if appointment.status != "stopped":
+    if appointment.status != AppointmentStatus.STOPPED:
         raise HTTPException(
             status_code=400,
             detail="Can only complete confirmed appointments"
         )
     
-    appointment.status = "completed"
+    appointment.status = AppointmentStatus.COMPLETED
     appointment.endAt = datetime.now()
     await appointment.save()
     return {"message": "Appointment completed"}
@@ -246,7 +256,10 @@ async def get_upcoming_appointments(patient_id: int):
     appointments = await Appointment.filter(
         patient_id=patient_id,
         date__gte=today,
-        status__in=["pending", "nurseConfirmed"]
+        status__in=[
+            AppointmentStatus.PENDING,
+            AppointmentStatus.NURSE_CONFIRMED
+        ]
     ).order_by('date', 'time')
     return appointments
 
@@ -264,7 +277,7 @@ async def update_appointment(
     if not existing_appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if existing_appointment.status not in ["pending"]:
+    if existing_appointment.status not in [AppointmentStatus.PENDING]:
         raise HTTPException(
             status_code=400,
             detail="Can only modify pending appointments"
@@ -293,13 +306,16 @@ async def cancel_appointment(appointment_id: int, patient_id: int):
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
     
-    if appointment.status not in ["pending", "nurseConfirmed"]:
+    if appointment.status not in [
+        AppointmentStatus.PENDING,
+        AppointmentStatus.NURSE_CONFIRMED
+    ]:
         raise HTTPException(
             status_code=400,
             detail="Can only cancel pending or nurse-confirmed appointments"
         )
     
-    appointment.status = "canceled"
+    appointment.status = AppointmentStatus.CANCELED
     await appointment.save()
     return {"message": "Appointment cancelled"}
 
@@ -318,12 +334,22 @@ async def toggle_nurse_availability(nurse_id: int):
 
 # Add an enum or constants for appointment status flow
 APPOINTMENT_STATUS_FLOW = {
-    "pending": ["nurseConfirmed", "canceled"],
-    "nurseConfirmed": ["started", "canceled"],
-    "started": ["stopped"],
-    "stopped": ["completed"],
-    "completed": [],
-    "canceled": []
+    AppointmentStatus.PENDING: [
+        AppointmentStatus.NURSE_CONFIRMED,
+        AppointmentStatus.CANCELED
+    ],
+    AppointmentStatus.NURSE_CONFIRMED: [
+        AppointmentStatus.STARTED,
+        AppointmentStatus.CANCELED
+    ],
+    AppointmentStatus.STARTED: [
+        AppointmentStatus.STOPPED
+    ],
+    AppointmentStatus.STOPPED: [
+        AppointmentStatus.COMPLETED
+    ],
+    AppointmentStatus.COMPLETED: [],
+    AppointmentStatus.CANCELED: []
 }
 
 def validate_status_transition(current_status: str, new_status: str):
