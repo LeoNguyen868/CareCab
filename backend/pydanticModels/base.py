@@ -101,7 +101,7 @@ class AppointmentOut(BaseModel):
     symptoms: str
     transportation: str
     estimated_cost: float
-    status: str  # choices: "pending", "confirmed", "completed", "canceled"
+    status: str  # choices: "pending", "nurseConfirmed", "started", "stopped", "completed", "canceled"
     startAt: datetime
     endAt: datetime
 
