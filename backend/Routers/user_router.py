@@ -8,6 +8,7 @@ from pydanticModels.base import (
     PatientOut
 )
 from ORMModels.users import Patient, User, UserProfile
+from Utils.security import get_password_hash
 from typing import List
 
 router = APIRouter()
@@ -42,7 +43,11 @@ async def validate_user_registration(user: UserCreate):
 
 @router.post("/", response_model=UserOut)
 async def create_user(user: UserCreate):
-    new_user = await User.create(**user.dict())
+    user_data = user.dict()
+    if 'password_hash' in user_data:
+        user_data['password_hash'] = get_password_hash(user_data['password_hash'])
+
+    new_user = await User.create(**user_data)
     return new_user
 
 @router.put("/{user_id}", response_model=UserOut)
@@ -51,8 +56,13 @@ async def update_user(user_id: int, user: UserCreate):
     if user_obj is None:
         raise HTTPException(status_code=404, detail="User not found")
     
+    user_data = user.dict()
+    # Check if password is being updated
+    if 'password_hash' in user_data and user_data['password_hash'] != user_obj.password_hash:
+        user_data['password_hash'] = get_password_hash(user_data['password_hash'])
+
     # Update fields
-    for key, value in user.dict().items():
+    for key, value in user_data.items():
         setattr(user_obj, key, value)
     
     # Save changes to database
