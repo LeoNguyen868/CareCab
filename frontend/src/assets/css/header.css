@@ -1,0 +1,290 @@
+/* =========================================
+   1. CẤU TRÚC CHÍNH CỦA HEADER (HEADER LAYOUT)
+   ========================================= */
+
+/* Thanh Header chính: Cố định ở đầu trang, nền trắng, có bóng đổ */
+.header {
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+    position: fixed; /* Cố định khi cuộn trang */
+    width: 100%;
+    top: 0;
+    z-index: 100; /* Luôn hiển thị trên các thành phần khác */
+}
+
+/* Container chứa nội dung header: Canh giữa, giới hạn chiều rộng */
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex; /* Dàn hàng ngang các phần tử con */
+    justify-content: space-between; /* Đẩy logo sang trái, menu sang phải */
+    align-items: center; /* Canh giữa theo chiều dọc */
+    position: relative;
+}
+
+/* =========================================
+   2. LOGO VÀ THƯƠNG HIỆU (BRANDING)
+   ========================================= */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Khoảng cách giữa icon và tên */
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+}
+
+.logo h1 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+/* =========================================
+   3. MENU ĐIỀU HƯỚNG (NAVIGATION MENU - DESKTOP)
+   ========================================= */
+
+/* Container chứa các link điều hướng */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Khoảng cách giữa các link */
+    flex-wrap: nowrap;
+}
+
+/* Style cho từng link trong menu */
+.nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Hiệu ứng khi di chuột vào link */
+.nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--light-bg);
+    border-radius: 0.375rem;
+}
+
+/* =========================================
+   4. CÁC NÚT CHỨC NĂNG (BUTTONS)
+   ========================================= */
+
+/* Nhóm nút Đăng nhập / Đăng ký */
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Style chung cho các nút */
+.btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Nút Đăng nhập (viền màu) */
+.btn-login {
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+/* Nút Đăng ký (nền màu) */
+.btn-register,
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+}
+
+/* Hiệu ứng hover cho nút */
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+   5. NÚT MENU MOBILE (HAMBURGER BUTTON)
+   ========================================= */
+
+/* Nút mở menu trên mobile (Mặc định ẩn trên desktop) */
+.mobile-menu-btn {
+    display: none; /* Chỉ hiện khi màn hình nhỏ */
+    width: 30px;
+    height: 25px;
+    right: 1rem;
+    position: absolute; /* Định vị tuyệt đối so với header */
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: transparent;
+    z-index: 100;
+}
+
+/* 3 đường gạch ngang của menu hamburger */
+.mobile-menu-btn span {
+    background-color: var(--primary-color);
+    height: 4px;
+    width: 100%;
+    left: 0;
+    display: block;
+    position: absolute;
+    border-radius: 2px;
+    transition: .3s cubic-bezier(.8,.5,.2,1.4);
+}
+
+/* Vị trí các đường gạch */
+.mobile-menu-btn span:nth-child(1) { top: 0px; }
+.mobile-menu-btn span:nth-child(2) { top: 10px; }
+.mobile-menu-btn span:nth-child(3) { bottom: 0px; }
+
+/* Hiệu ứng biến thành dấu X khi menu mở (Class .active) */
+.mobile-menu-btn.active { transform: rotate(-90deg); }
+.mobile-menu-btn.active span { transition: .3s cubic-bezier(.8,.5,.2,1.4); }
+
+.mobile-menu-btn.active span:nth-child(1) {
+    transform: rotate(45deg);
+    top: 10px;
+    left: 2px;
+    transition-delay: 100ms;
+}
+
+.mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
+.mobile-menu-btn.active span:nth-child(3) {
+    transform: rotate(-45deg);
+    top: 10px;
+    left: 2px;
+    transition-delay: 100ms;
+}
+
+/* Lớp phủ mờ (Overlay) khi menu mở trên mobile */
+.menu-overlay {
+    display: none; /* Mặc định ẩn */
+}
+
+/* =========================================
+   6. RESPONSIVE DESIGN (GIAO DIỆN MOBILE/TABLET)
+   ========================================= */
+
+/* Tablet & Mobile (Màn hình < 768px) */
+@media (max-width: 768px) {
+    /* Hiển thị nút menu hamburger */
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    /* Điều chỉnh container */
+    .nav-container {
+        padding: 0 1rem;
+        justify-content: flex-start; /* Canh trái logo */
+    }
+    
+    /* Chuyển menu thành sidebar trượt từ phải sang */
+    .nav-menu {
+        position: fixed;
+        top: 60px; /* Thấp hơn header */
+        right: -100%; /* Giấu menu sang phải */
+        width: 70%; 
+        height: 100vh; /* Full chiều cao */
+        background-color: var(--white);
+        flex-direction: column; /* Dàn dọc các item */
+        align-items: center;
+        /* justify-content: flex-start; Bỏ comment nếu cần canh trên cùng */
+        gap: 2rem;
+        padding: 2rem;
+        padding-top: 1rem;
+        transition: right 0.3s ease-in-out; /* Hiệu ứng trượt */
+        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        z-index: 99;
+    }
+
+    /* Khi menu mở (Class .active) */
+    .nav-menu.active {
+        right: 0; /* Trượt vào màn hình */
+    }
+
+    /* Hiển thị lớp phủ mờ */
+    .menu-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 98;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Điều chỉnh các nút auth */
+    .auth-buttons {
+        gap: 0.5rem;
+    }
+
+    .btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile Nhỏ (Màn hình < 480px) */
+@media (max-width: 480px) {
+    /* Thu nhỏ logo */
+    .logo { gap: 0.25rem; }
+    .logo h1 { font-size: 1.2rem; }
+
+    /* Thu nhỏ nút và khoảng cách */
+    .auth-buttons { gap: 0.25rem; }
+    .btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.85rem;
+        width: 100%; /* Nút full chiều rộng trong menu */
+        margin: 0.5rem 0;
+    }
+
+    /* Menu sidebar full màn hình chiều ngang */
+    .nav-menu {
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /* Link menu to hơn để dễ bấm */
+    .nav-link {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem;
+        background-color: var(--light-bg);
+        border-radius: 0.375rem;
+        font-size: 1.1rem;
+    }
+
+    .nav-link:hover {
+        background-color: var(--primary-color);
+        color: var(--white);
+    }
+}
+
+/* Thiết bị cảm ứng (Touch devices) */
+@media (hover: none) {
+    .btn,
+    .nav-link {
+        padding: 0.8rem 1.2rem; /* Tăng vùng nhấn */
+    }
+}

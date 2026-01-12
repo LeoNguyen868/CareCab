@@ -1,0 +1,97 @@
+/* Profile Page Styles - Extracted from main.css */
+
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 6rem 1rem 2rem; /* Matches main.css padding adjustment for fixed header */
+    min-height: calc(100vh - 60px); /* Fill remaining height */
+}
+
+.profile-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h2 {
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.profile-section {
+    margin-bottom: 2rem;
+}
+
+.profile-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 0.5rem;
+}
+
+.profile-info {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.info-group {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.info-group:last-child {
+    border-bottom: none;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: #666;
+}
+
+.info-group p {
+    margin: 0;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+#editProfileBtn { /* ID selector from html, but usually class is better. keeping for compatibility */
+    margin-top: 1rem;
+    width: 100%; /* Often looks better on profile page if it's wide or constrained? Original CSS didn't specify width, let's keep standard btn behavior or match container */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .profile-container {
+        padding-top: 6rem;
+    }
+
+    .profile-content {
+        padding: 1.5rem;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-content {
+        padding: 1rem;
+        margin: 0;
+        border-radius: 6px;
+    }
+
+    .info-group {
+        grid-template-columns: 1fr; /* Stack label and value on mobile */
+        gap: 0.25rem;
+        align-items: flex-start;
+    }
+    
+    .info-group label {
+        font-size: 0.9rem;
+    }
+}
