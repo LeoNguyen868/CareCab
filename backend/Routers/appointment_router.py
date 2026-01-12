@@ -79,6 +79,59 @@ async def get_available_nurses(availability: AvailabilityCheck):
     
     return available_nurses
 
+@router.post("/check-timeslot")
+async def check_timeslot(availability: AvailabilityCheck):
+    # Check if requested date/time is in the past
+    current_datetime = datetime.now(timezone.utc)
+    
+    # Create datetime from date and time, handle string input if necessary
+    # Note: Pydantic handles basic type conversion, but safe to be explicit
+    try:
+        requested_datetime = datetime.combine(
+            availability.date,
+            availability.time,
+            tzinfo=timezone.utc
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid date/time format")
+    
+    if requested_datetime < current_datetime:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot check availability for past date/time"
+        )
+    
+    # Check if booking is at least 2 hours in advance (consistent with other endpoints)
+    time_difference = requested_datetime - current_datetime
+    if time_difference.total_seconds() < 7200:
+        return {"available": False, "reason": "Too soon"}
+
+    # Logic: A timeslot is available if there is at least one nurse 
+    # who is available AND not busy at that time
+    
+    # 1. Get all busy nurse IDs at that time
+    busy_nurses = await Appointment.filter(
+        date=availability.date,
+        time=availability.time,
+        status__in=[
+            AppointmentStatus.PENDING,
+            AppointmentStatus.NURSE_CONFIRMED,
+            AppointmentStatus.STARTED
+        ]
+    ).values_list('nurse_id', flat=True)
+    
+    # 2. Count available nurses who are NOT in the busy list
+    if busy_nurses:
+        available_count = await Nurse.filter(
+            Q(availability=True) & ~Q(nurse_id__in=busy_nurses)
+        ).count()
+    else:
+        available_count = await Nurse.filter(
+            availability=True
+        ).count()
+        
+    return {"available": available_count > 0}
+
 @router.post("/", response_model=AppointmentOut)
 async def create_appointment(appointment: AppointmentCreate):
     # Check if appointment time is in the past
@@ -244,6 +297,62 @@ async def complete_appointment(appointment_id: int, patient_id: int):
     appointment.endAt = datetime.now()
     await appointment.save()
     return {"message": "Appointment completed"}
+
+@router.post("/{appointment_id}/staff-complete")
+async def staff_complete_appointment(appointment_id: int):
+    appointment = await Appointment.get_or_none(id=appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Allow staff to mark as complete from verified statuses
+    if appointment.status not in [AppointmentStatus.NURSE_CONFIRMED, AppointmentStatus.STARTED, AppointmentStatus.STOPPED]:
+         raise HTTPException(
+            status_code=400,
+            detail="Can only complete confirmed or active appointments"
+        )
+
+    appointment.status = AppointmentStatus.COMPLETED
+    appointment.endAt = datetime.now()
+    await appointment.save()
+    return {"message": "Appointment completed by staff"}
+
+@router.put("/{appointment_id}/cancel")
+async def cancel_appointment_put(appointment_id: int):
+    appointment = await Appointment.get_or_none(id=appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appointment.status not in [
+        AppointmentStatus.PENDING,
+        AppointmentStatus.NURSE_CONFIRMED
+    ]:
+        raise HTTPException(
+            status_code=400,
+            detail="Can only cancel pending or nurse-confirmed appointments"
+        )
+    
+    appointment.status = AppointmentStatus.CANCELED
+    await appointment.save()
+    return {"message": "Appointment cancelled"}
+
+@router.patch("/{appointment_id}/cancelled")
+async def cancel_appointment_patch(appointment_id: int):
+    appointment = await Appointment.get_or_none(id=appointment_id)
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    if appointment.status not in [
+        AppointmentStatus.PENDING,
+        AppointmentStatus.NURSE_CONFIRMED
+    ]:
+        raise HTTPException(
+            status_code=400,
+            detail="Can only cancel pending or nurse-confirmed appointments"
+        )
+    
+    appointment.status = AppointmentStatus.CANCELED
+    await appointment.save()
+    return {"message": "Appointment cancelled"}
 
 @router.get("/patient/{patient_id}", response_model=List[AppointmentOut])
 async def get_patient_appointments(patient_id: int):
