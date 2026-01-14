@@ -104,6 +104,65 @@
 .status-cancelled { color: #ef4444; font-weight: 500; }
 .status-completed { color: #6366f1; font-weight: 500; }
 
+/* Empty State */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    border: 1px dashed #e5e7eb;
+    margin-top: 1rem;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1.5rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.empty-state-text {
+    color: #6b7280;
+    max-width: 400px;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.empty-state-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.empty-state-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    color: white;
+}
+
 /* Popup Styles */
 .appointment-popup {
     display: none;

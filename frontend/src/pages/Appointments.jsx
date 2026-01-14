@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../assets/css/appointments.css';
 
 const Appointments = () => {
@@ -186,7 +187,19 @@ const Appointments = () => {
                                 </div>
                             ))
                         ) : (
-                            <p className="no-data">Không có lịch hẹn nào.</p>
+                            <div className="empty-state">
+                                <div className="empty-state-icon">
+                                    <i className="fas fa-calendar-plus" aria-hidden="true"></i>
+                                </div>
+                                <h3 className="empty-state-title">Chưa có lịch hẹn nào</h3>
+                                <p className="empty-state-text">
+                                    Bạn chưa có lịch hẹn{activeTab !== 'all' ? ` ở trạng thái "${getStatusText(activeTab)}"` : ''}.
+                                    Hãy đặt lịch khám ngay để chăm sóc sức khỏe của bạn.
+                                </p>
+                                <Link to="/book" className="btn btn-primary empty-state-action">
+                                    Đặt lịch khám ngay
+                                </Link>
+                            </div>
                         )}
                     </div>
 
