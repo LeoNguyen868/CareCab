@@ -1,6 +1,7 @@
 from tortoise import Tortoise, fields
 from tortoise.models import Model
 from datetime import datetime
+import os
 import smtplib
 import random
 from email.mime.text import MIMEText
@@ -8,8 +9,13 @@ from email.mime.multipart import MIMEMultipart
 #utils
 #email
 def send_otp_email(receiver_email):
-    sender_email = "hieu76540@gmail.com"
-    app_password = "gdmm ptnh neaz trqm"
+    sender_email = os.getenv("EMAIL_SENDER")
+    app_password = os.getenv("EMAIL_PASSWORD")
+
+    if not sender_email or not app_password:
+        print("Error: Email credentials not configured.")
+        return None
+
     otp = random.randint(100000, 999999)
     subject = "Your OTP Code"
     body = f"Your OTP code is: {otp}"
