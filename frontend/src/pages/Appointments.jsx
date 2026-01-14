@@ -138,30 +138,35 @@ const Appointments = () => {
                     
                     <div className="status-tabs">
                         <button 
+                            aria-pressed={activeTab === 'pending'}
                             className={`status-tab ${activeTab === 'pending' ? 'active' : ''}`}
                             onClick={() => handleTabClick('pending')}
                         >
                             Chờ xác nhận
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'confirmed'}
                             className={`status-tab ${activeTab === 'confirmed' ? 'active' : ''}`}
                             onClick={() => handleTabClick('confirmed')}
                         >
                             Đã xác nhận
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'cancelled'}
                             className={`status-tab ${activeTab === 'cancelled' ? 'active' : ''}`}
                             onClick={() => handleTabClick('cancelled')}
                         >
                             Đã hủy
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'completed'}
                             className={`status-tab ${activeTab === 'completed' ? 'active' : ''}`}
                             onClick={() => handleTabClick('completed')}
                         >
                             Đã hoàn thành
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'all'}
                             className={`status-tab ${activeTab === 'all' ? 'active' : ''}`}
                             onClick={() => handleTabClick('all')}
                         >
@@ -178,6 +183,14 @@ const Appointments = () => {
                                     key={apt.id} 
                                     className="appointment-item"
                                     onClick={() => handleAppointmentClick(apt)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleAppointmentClick(apt);
+                                        }
+                                    }}
                                 >
                                     <p><strong>Ngày:</strong> {formatDate(apt.appointment_date)}</p>
                                     <p><strong>Giờ:</strong> {formatTime(apt.appointment_time)}</p>
@@ -191,10 +204,16 @@ const Appointments = () => {
                     </div>
 
                     {/* Appointment Details Popup */}
-                    <div className={`appointment-popup ${selectedAppointment ? 'active' : ''}`} onClick={closePopup}>
+                    <div
+                        className={`appointment-popup ${selectedAppointment ? 'active' : ''}`}
+                        onClick={closePopup}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="popup-title"
+                    >
                         <div className="appointment-popup-content" onClick={(e) => e.stopPropagation()}>
-                            <button className="close-popup" onClick={closePopup}>&times;</button>
-                            <h3>Chi tiết lịch hẹn</h3>
+                            <button className="close-popup" onClick={closePopup} aria-label="Đóng">&times;</button>
+                            <h3 id="popup-title">Chi tiết lịch hẹn</h3>
                             
                             {selectedAppointment && (
                                 <div className="appointment-details">
