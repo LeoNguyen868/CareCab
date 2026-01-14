@@ -30,56 +30,28 @@ const AdminPage = () => {
     '16:00', '16:15', '16:30'
   ];
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [appointments, currentFilter, searchTerm, dateFilter, timeFilter]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = React.useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/appointments/');
       const data = await response.json();
       
-      // Fetch patient info for each appointment
-      const appointmentsWithPatients = await Promise.all(
-        data.map(async (apt) => {
-          const patientInfo = await fetchPatientInfo(apt.patient_id);
-          return {
-            ...apt,
-            appointment_date: apt.date || apt.appointment_date,
-            appointment_time: apt.time || apt.appointment_time,
-            patientName: patientInfo?.full_name || 'N/A',
-            phone: patientInfo?.emergency_contact || 'N/A',
-            email: patientInfo?.email || 'N/A'
-          };
-        })
-      );
+      // Map data to match the component's expected structure
+      const formattedAppointments = data.map(apt => ({
+        ...apt,
+        appointment_date: apt.date || apt.appointment_date,
+        appointment_time: apt.time || apt.appointment_time,
+        patientName: apt.patient_name || 'N/A',
+        phone: apt.patient_phone || 'N/A',
+        email: apt.patient_email || 'N/A'
+      }));
       
-      setAppointments(appointmentsWithPatients);
+      setAppointments(formattedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     }
-  };
+  }, []);
 
-  const fetchPatientInfo = async (patientId) => {
-    try {
-      const userResponse = await fetch(`http://localhost:8000/users/by-patient/${patientId}`);
-      const userData = await userResponse.json();
-      
-      const profileResponse = await fetch(`http://localhost:8000/users/profile/${userData.user_id}`);
-      const profileData = await profileResponse.json();
-      
-      return { ...userData, ...profileData };
-    } catch (error) {
-      console.error('Error fetching patient info:', error);
-      return null;
-    }
-  };
-
-  const applyFilters = () => {
+  const applyFilters = React.useCallback(() => {
     let filtered = [...appointments];
 
     // Status filter
@@ -109,7 +81,15 @@ const AdminPage = () => {
     }
 
     setFilteredAppointments(filtered);
-  };
+  }, [appointments, currentFilter, searchTerm, dateFilter, timeFilter]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const showMessage = (text, type = 'success') => {
     setMessage({ text, type });
