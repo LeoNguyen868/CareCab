@@ -14,7 +14,9 @@ async def login(login_request: LoginRequest):
     )
     if user is None or not verify_password(login_request.password, user.password_hash):
         # Fallback for old plaintext passwords (temporary migration step)
-        if user and user.password_hash == login_request.password:
+        # Prevent pass-the-hash: only allow plaintext match if it's NOT a bcrypt hash
+        is_bcrypt = user and user.password_hash.startswith(('$2b$', '$2a$', '$2y$'))
+        if user and not is_bcrypt and user.password_hash == login_request.password:
             # Optionally migrate here:
             # user.password_hash = get_password_hash(login_request.password)
             # await user.save()
@@ -29,6 +31,15 @@ async def change_password(change_password: ChangePassword):
     user = await User.get_or_none(email=change_password.email)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Verify old password
+    if not verify_password(change_password.old_password, user.password_hash):
+        # Fallback for old plaintext passwords
+        # Prevent pass-the-hash: only allow plaintext match if it's NOT a bcrypt hash
+        is_bcrypt = user.password_hash.startswith(('$2b$', '$2a$', '$2y$'))
+        if is_bcrypt or user.password_hash != change_password.old_password:
+             raise HTTPException(status_code=401, detail="Invalid old password")
+
     user.password_hash = get_password_hash(change_password.new_password)
     await user.save()
     return {"message": "Password changed successfully"}
