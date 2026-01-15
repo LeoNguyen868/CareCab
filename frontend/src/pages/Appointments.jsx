@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import '../assets/css/appointments.css';
 
 const Appointments = () => {
     const [appointments, setAppointments] = useState([]);
-    const [filteredAppointments, setFilteredAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -13,8 +12,13 @@ const Appointments = () => {
         loadAppointments();
     }, []);
 
-    useEffect(() => {
-        filterAppointments();
+    // Optimized: Memoize filtered appointments to avoid unnecessary re-renders and state synchronization issues
+    const filteredAppointments = useMemo(() => {
+        if (activeTab === 'all') {
+            return appointments;
+        } else {
+            return appointments.filter(apt => apt.status === activeTab);
+        }
     }, [appointments, activeTab]);
 
     const loadAppointments = async () => {
@@ -59,14 +63,6 @@ const Appointments = () => {
             console.error('Error loading appointments:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const filterAppointments = () => {
-        if (activeTab === 'all') {
-            setFilteredAppointments(appointments);
-        } else {
-            setFilteredAppointments(appointments.filter(apt => apt.status === activeTab));
         }
     };
 
