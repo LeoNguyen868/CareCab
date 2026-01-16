@@ -639,8 +639,30 @@ header h1 {
     background-color: #43a047;
 }
 
-.btn-complete i {
+.btn-complete .btn-cancel i {
     font-size: 12px;
+}
+
+.btn-cancel {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #d32f2f;
+}
+
+.btn-action {
+    margin: 5px 5px;
 }
 
 .welcome-header {

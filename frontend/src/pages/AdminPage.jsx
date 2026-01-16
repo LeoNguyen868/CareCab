@@ -137,9 +137,9 @@ const AdminPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       pending: { class: 'status-pending', text: 'Chờ xác nhận' },
-      nurseConfirmed: { class: 'status-confirmed', text: 'Đã xác nhận' },
+      nurseConfirmed: { class: 'status-confirmed', text: 'Y tá đã xác nhận' },
       completed: { class: 'status-completed', text: 'Đã hoàn thành' },
-      cancelled: { class: 'status-cancelled', text: 'Đã hủy' }
+      canceled: { class: 'status-canceled', text: 'Đã hủy' }
     };
     const badge = badges[status] || { class: '', text: status };
     return <span className={`status-badge ${badge.class}`}>{badge.text}</span>;
@@ -232,7 +232,8 @@ const AdminPage = () => {
               <div className="welcome-header">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h2>Quản lý lịch tái khám</h2>
-                  <div className="admin-actions">
+                </div>
+                <div className="admin-actions">
                     <Link to="/admin/rooms" className="btn btn-primary me-2">
                       <i className="fas fa-door-open"></i> Quản lý phòng
                     </Link>
@@ -240,8 +241,6 @@ const AdminPage = () => {
                       <i className="fas fa-tasks"></i> Gán phòng
                     </Link>
                   </div>
-                </div>
-                
                 <div className="filters-row">
                   <div className="filters-group">
                     <div className="search-wrapper">
@@ -366,22 +365,33 @@ const AdminPage = () => {
                           <td>
                             <div className="action-buttons">
                               {apt.status === 'pending' && (
-                                <button
-                                  className="btn-action btn-confirm"
-                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'nurseConfirmed'); }}
-                                  disabled={loading}
-                                >
-                                  <i className="fas fa-check"></i> Y tá xác nhận
-                                </button>
+                                <>
+                                  <button
+                                    className="btn-action btn-confirm"
+                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'nurseConfirmed'); }}
+                                    disabled={loading}
+                                  >
+                                    <i className="fas fa-check"></i> Y tá xác nhận
+                                  </button>
+                                  <button
+                                    className="btn-action btn-cancel"
+                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'cancelled'); }}
+                                    disabled={loading}
+                                  >
+                                    <i className="fas fa-times"></i> Hủy
+                                  </button>
+                                </>
                               )}
                               {apt.status === 'nurseConfirmed' && (
-                                <button
-                                  className="btn-action btn-complete"
-                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'completed'); }}
-                                  disabled={loading}
-                                >
-                                  <i className="fas fa-check-double"></i> Hoàn thành
-                                </button>
+                                <>
+                                  <button
+                                    className="btn-action btn-complete"
+                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'completed'); }}
+                                    disabled={loading}
+                                  >
+                                    <i className="fas fa-check-double"></i> Hoàn thành
+                                  </button>
+                                </>
                               )}
                             </div>
                           </td>
@@ -419,7 +429,7 @@ const AdminPage = () => {
               <p><strong>Giờ hẹn:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
               <p><strong>Ngày hẹn:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
               <p><strong>Số điện thoại:</strong> {selectedAppointment.phone}</p>
-              <p><strong>Lý do tái khám:</strong> {selectedAppointment.reason || "Không có"}</p>
+              <p><strong>Lý do tái khám:</strong> {selectedAppointment.symptoms || "Không có"}</p>
               <p><strong>Trạng thái:</strong> {getStatusBadge(selectedAppointment.status)}</p>
             </div>
             <div className="popup-actions">

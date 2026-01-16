@@ -162,16 +162,16 @@ const Appointments = () => {
                             Chờ xác nhận
                         </button>
                         <button 
-                            aria-pressed={activeTab === 'confirmed'}
-                            className={`status-tab ${activeTab === 'confirmed' ? 'active' : ''}`}
-                            onClick={() => handleTabClick('confirmed')}
+                            aria-pressed={activeTab === 'nurseConfirmed'}
+                            className={`status-tab ${activeTab === 'nurseConfirmed' ? 'active' : ''}`}
+                            onClick={() => handleTabClick('nurseConfirmed')}
                         >
                             Đã xác nhận
                         </button>
                         <button 
-                            aria-pressed={activeTab === 'cancelled'}
-                            className={`status-tab ${activeTab === 'cancelled' ? 'active' : ''}`}
-                            onClick={() => handleTabClick('cancelled')}
+                            aria-pressed={activeTab === 'canceled'}
+                            className={`status-tab ${activeTab === 'canceled' ? 'active' : ''}`}
+                            onClick={() => handleTabClick('canceled')}
                         >
                             Đã hủy
                         </button>
@@ -246,8 +246,8 @@ const Appointments = () => {
                             
                             {selectedAppointment && (
                                 <div className="appointment-details">
-                                    <p><strong>Ngày:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
-                                    <p><strong>Giờ:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
+                                    <p><strong>Ngày:</strong> {formatDate(selectedAppointment.date)}</p>
+                                    <p><strong>Giờ:</strong> {formatTime(selectedAppointment.time)}</p>
                                     <p><strong>Trạng thái:</strong> <span className={`status-${selectedAppointment.status}`}>{getStatusText(selectedAppointment.status)}</span></p>
                                     <p><strong>Bác sĩ:</strong> {selectedAppointment.doctor_name || 'Đang chờ xếp lịch'}</p>
                                     <p><strong>Triệu chứng:</strong> {selectedAppointment.symptoms || 'Không có'}</p>
