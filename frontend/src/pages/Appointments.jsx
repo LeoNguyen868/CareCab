@@ -21,6 +21,22 @@ const Appointments = () => {
         }
     }, [appointments, activeTab]);
 
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setSelectedAppointment(null);
+            }
+        };
+
+        if (selectedAppointment) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedAppointment]);
+
     const loadAppointments = async () => {
         try {
             // First check for cached patient data
