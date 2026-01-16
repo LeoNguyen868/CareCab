@@ -136,9 +136,13 @@ const Appointments = () => {
     const getStatusText = (status) => {
         const statusMap = {
             'pending': 'Chờ xác nhận',
+            'nurseConfirmed': 'Y tá đã xác nhận',
+            'started': 'Đang khám',
+            'stopped': 'Đã dừng',
+            'completed': 'Đã hoàn thành',
+            'canceled': 'Đã hủy',
             'confirmed': 'Đã xác nhận',
-            'cancelled': 'Đã hủy',
-            'completed': 'Đã hoàn thành'
+            'cancelled': 'Đã hủy'
         };
         return statusMap[status] || status;
     };

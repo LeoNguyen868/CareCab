@@ -405,11 +405,11 @@ const AdminPage = () => {
               <p><strong>Mã lịch hẹn:</strong> {selectedAppointment.id}</p>
               <p><strong>Mã bệnh nhân:</strong> {selectedAppointment.patient_id}</p>
               <p><strong>Tên bệnh nhân:</strong> {selectedAppointment.patientName}</p>
-              <p><strong>Giờ hẹn:</strong> {selectedAppointment.appointment_time}</p>
+              <p><strong>Giờ hẹn:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
               <p><strong>Ngày hẹn:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
               <p><strong>Số điện thoại:</strong> {selectedAppointment.phone}</p>
-              <p><strong>Lý do tái khám:</strong> {selectedAppointment.reason}</p>
-              <p><strong>Trạng thái:</strong> {selectedAppointment.status}</p>
+              <p><strong>Lý do tái khám:</strong> {selectedAppointment.reason || "Không có"}</p>
+              <p><strong>Trạng thái:</strong> {getStatusBadge(selectedAppointment.status)}</p>
             </div>
             <div className="popup-actions">
               {selectedAppointment.status === 'pending' && (
