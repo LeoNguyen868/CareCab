@@ -225,7 +225,7 @@ const Appointments = () => {
                                     Bạn chưa có lịch hẹn{activeTab !== 'all' ? ` ở trạng thái "${getStatusText(activeTab)}"` : ''}.
                                     Hãy đặt lịch khám ngay để chăm sóc sức khỏe của bạn.
                                 </p>
-                                <Link to="/book" className="btn btn-primary empty-state-action">
+                                <Link to="/home/book" className="btn btn-primary empty-state-action">
                                     Đặt lịch khám ngay
                                 </Link>
                             </div>

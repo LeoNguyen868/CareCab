@@ -360,7 +360,7 @@ const AdminPage = () => {
                                   onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'nurseConfirmed'); }}
                                   disabled={loading}
                                 >
-                                  <i className="fas fa-check"></i> Xác nhận
+                                  <i className="fas fa-check"></i> Y tá xác nhận
                                 </button>
                               )}
                               {apt.status === 'nurseConfirmed' && (
