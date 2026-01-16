@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import '../assets/css/appointments.css';
 
 const Appointments = () => {
     const [appointments, setAppointments] = useState([]);
-    const [filteredAppointments, setFilteredAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -12,9 +12,30 @@ const Appointments = () => {
         loadAppointments();
     }, []);
 
-    useEffect(() => {
-        filterAppointments();
+    // Optimized: Memoize filtered appointments to avoid unnecessary re-renders and state synchronization issues
+    const filteredAppointments = useMemo(() => {
+        if (activeTab === 'all') {
+            return appointments;
+        } else {
+            return appointments.filter(apt => apt.status === activeTab);
+        }
     }, [appointments, activeTab]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setSelectedAppointment(null);
+            }
+        };
+
+        if (selectedAppointment) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedAppointment]);
 
     const loadAppointments = async () => {
         try {
@@ -58,14 +79,6 @@ const Appointments = () => {
             console.error('Error loading appointments:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const filterAppointments = () => {
-        if (activeTab === 'all') {
-            setFilteredAppointments(appointments);
-        } else {
-            setFilteredAppointments(appointments.filter(apt => apt.status === activeTab));
         }
     };
 
@@ -123,9 +136,13 @@ const Appointments = () => {
     const getStatusText = (status) => {
         const statusMap = {
             'pending': 'Chờ xác nhận',
+            'nurseConfirmed': 'Y tá đã xác nhận',
+            'started': 'Đang khám',
+            'stopped': 'Đã dừng',
+            'completed': 'Đã hoàn thành',
+            'canceled': 'Đã hủy',
             'confirmed': 'Đã xác nhận',
-            'cancelled': 'Đã hủy',
-            'completed': 'Đã hoàn thành'
+            'cancelled': 'Đã hủy'
         };
         return statusMap[status] || status;
     };
@@ -138,30 +155,35 @@ const Appointments = () => {
                     
                     <div className="status-tabs">
                         <button 
+                            aria-pressed={activeTab === 'pending'}
                             className={`status-tab ${activeTab === 'pending' ? 'active' : ''}`}
                             onClick={() => handleTabClick('pending')}
                         >
                             Chờ xác nhận
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'confirmed'}
                             className={`status-tab ${activeTab === 'confirmed' ? 'active' : ''}`}
                             onClick={() => handleTabClick('confirmed')}
                         >
                             Đã xác nhận
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'cancelled'}
                             className={`status-tab ${activeTab === 'cancelled' ? 'active' : ''}`}
                             onClick={() => handleTabClick('cancelled')}
                         >
                             Đã hủy
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'completed'}
                             className={`status-tab ${activeTab === 'completed' ? 'active' : ''}`}
                             onClick={() => handleTabClick('completed')}
                         >
                             Đã hoàn thành
                         </button>
                         <button 
+                            aria-pressed={activeTab === 'all'}
                             className={`status-tab ${activeTab === 'all' ? 'active' : ''}`}
                             onClick={() => handleTabClick('all')}
                         >
@@ -178,6 +200,14 @@ const Appointments = () => {
                                     key={apt.id} 
                                     className="appointment-item"
                                     onClick={() => handleAppointmentClick(apt)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleAppointmentClick(apt);
+                                        }
+                                    }}
                                 >
                                     <p><strong>Ngày:</strong> {formatDate(apt.appointment_date)}</p>
                                     <p><strong>Giờ:</strong> {formatTime(apt.appointment_time)}</p>
@@ -186,15 +216,33 @@ const Appointments = () => {
                                 </div>
                             ))
                         ) : (
-                            <p className="no-data">Không có lịch hẹn nào.</p>
+                            <div className="empty-state">
+                                <div className="empty-state-icon">
+                                    <i className="fas fa-calendar-plus" aria-hidden="true"></i>
+                                </div>
+                                <h3 className="empty-state-title">Chưa có lịch hẹn nào</h3>
+                                <p className="empty-state-text">
+                                    Bạn chưa có lịch hẹn{activeTab !== 'all' ? ` ở trạng thái "${getStatusText(activeTab)}"` : ''}.
+                                    Hãy đặt lịch khám ngay để chăm sóc sức khỏe của bạn.
+                                </p>
+                                <Link to="/book" className="btn btn-primary empty-state-action">
+                                    Đặt lịch khám ngay
+                                </Link>
+                            </div>
                         )}
                     </div>
 
                     {/* Appointment Details Popup */}
-                    <div className={`appointment-popup ${selectedAppointment ? 'active' : ''}`} onClick={closePopup}>
+                    <div
+                        className={`appointment-popup ${selectedAppointment ? 'active' : ''}`}
+                        onClick={closePopup}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="popup-title"
+                    >
                         <div className="appointment-popup-content" onClick={(e) => e.stopPropagation()}>
-                            <button className="close-popup" onClick={closePopup}>&times;</button>
-                            <h3>Chi tiết lịch hẹn</h3>
+                            <button className="close-popup" onClick={closePopup} aria-label="Đóng">&times;</button>
+                            <h3 id="popup-title">Chi tiết lịch hẹn</h3>
                             
                             {selectedAppointment && (
                                 <div className="appointment-details">

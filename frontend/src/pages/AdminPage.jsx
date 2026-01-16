@@ -30,56 +30,28 @@ const AdminPage = () => {
     '16:00', '16:15', '16:30'
   ];
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [appointments, currentFilter, searchTerm, dateFilter, timeFilter]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = React.useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/appointments/');
       const data = await response.json();
       
-      // Fetch patient info for each appointment
-      const appointmentsWithPatients = await Promise.all(
-        data.map(async (apt) => {
-          const patientInfo = await fetchPatientInfo(apt.patient_id);
-          return {
-            ...apt,
-            appointment_date: apt.date || apt.appointment_date,
-            appointment_time: apt.time || apt.appointment_time,
-            patientName: patientInfo?.full_name || 'N/A',
-            phone: patientInfo?.emergency_contact || 'N/A',
-            email: patientInfo?.email || 'N/A'
-          };
-        })
-      );
+      // Map data to match the component's expected structure
+      const formattedAppointments = data.map(apt => ({
+        ...apt,
+        appointment_date: apt.date || apt.appointment_date,
+        appointment_time: apt.time || apt.appointment_time,
+        patientName: apt.patient_name || 'N/A',
+        phone: apt.patient_phone || 'N/A',
+        email: apt.patient_email || 'N/A'
+      }));
       
-      setAppointments(appointmentsWithPatients);
+      setAppointments(formattedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     }
-  };
+  }, []);
 
-  const fetchPatientInfo = async (patientId) => {
-    try {
-      const userResponse = await fetch(`http://localhost:8000/users/by-patient/${patientId}`);
-      const userData = await userResponse.json();
-      
-      const profileResponse = await fetch(`http://localhost:8000/users/profile/${userData.user_id}`);
-      const profileData = await profileResponse.json();
-      
-      return { ...userData, ...profileData };
-    } catch (error) {
-      console.error('Error fetching patient info:', error);
-      return null;
-    }
-  };
-
-  const applyFilters = () => {
+  const applyFilters = React.useCallback(() => {
     let filtered = [...appointments];
 
     // Status filter
@@ -109,7 +81,15 @@ const AdminPage = () => {
     }
 
     setFilteredAppointments(filtered);
-  };
+  }, [appointments, currentFilter, searchTerm, dateFilter, timeFilter]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const showMessage = (text, type = 'success') => {
     setMessage({ text, type });
@@ -124,7 +104,7 @@ const AdminPage = () => {
 
       if (newStatus === 'completed') {
         endpoint = `http://localhost:8000/appointments/${appointmentId}/staff-complete`;
-      } else if (newStatus === 'confirmed') {
+      } else if (newStatus === 'nurseConfirmed') {
         endpoint = `http://localhost:8000/appointments/${appointmentId}/nurse-confirm?nurse_id=1`;
       } else {
         // Fallback for other statuses if needed, though admin.js only has confirm/complete
@@ -138,7 +118,7 @@ const AdminPage = () => {
       });
 
       if (response.ok) {
-        const statusText = newStatus === 'confirmed' ? 'xác nhận' : newStatus === 'completed' ? 'hoàn thành' : 'cập nhật';
+        const statusText = newStatus === 'nurseConfirmed' ? 'xác nhận' : newStatus === 'completed' ? 'hoàn thành' : 'cập nhật';
         showMessage(`Đã ${statusText} lịch hẹn!`, 'success');
         await fetchAppointments();
         setShowPopup(false);
@@ -156,7 +136,7 @@ const AdminPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       pending: { class: 'status-pending', text: 'Chờ xác nhận' },
-      confirmed: { class: 'status-confirmed', text: 'Đã xác nhận' },
+      nurseConfirmed: { class: 'status-confirmed', text: 'Đã xác nhận' },
       completed: { class: 'status-completed', text: 'Đã hoàn thành' },
       cancelled: { class: 'status-cancelled', text: 'Đã hủy' }
     };
@@ -188,11 +168,9 @@ const AdminPage = () => {
       <div 
         key={apt.id} 
         className="appointment-card"
-        onClick={(e) => {
-           if (!e.target.closest('button')) {
-             setSelectedAppointment(apt);
-             setShowPopup(true);
-           }
+        onClick={() => {
+           setSelectedAppointment(apt);
+           setShowPopup(true);
         }}
         data-id={apt.id}
       >
@@ -209,16 +187,16 @@ const AdminPage = () => {
           {apt.status === 'pending' && (
             <button
               className="btn-confirm"
-              onClick={() => handleStatusChange(apt.id, 'confirmed')}
+              onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'nurseConfirmed'); }}
               disabled={loading}
             >
               <i className="fas fa-check"></i> Xác nhận
             </button>
           )}
-          {apt.status === 'confirmed' && (
+          {apt.status === 'nurseConfirmed' && (
             <button
               className="btn-complete"
-              onClick={() => handleStatusChange(apt.id, 'completed')}
+              onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'completed'); }}
               disabled={loading}
             >
               <i className="fas fa-check"></i> Hoàn thành
@@ -308,8 +286,8 @@ const AdminPage = () => {
                     Chờ xác nhận
                   </button>
                   <button
-                    className={`filter-btn ${currentFilter === 'confirmed' ? 'active' : ''}`}
-                    onClick={() => setCurrentFilter('confirmed')}
+                    className={`filter-btn ${currentFilter === 'nurseConfirmed' ? 'active' : ''}`}
+                    onClick={() => setCurrentFilter('nurseConfirmed')}
                   >
                     Đã xác nhận
                   </button>
@@ -345,6 +323,7 @@ const AdminPage = () => {
                       <th>Tên bệnh nhân</th>
                       <th>Giờ</th>
                       <th>Ngày</th>
+                      <th>Mã Nurse</th>
                       <th>Trạng thái</th>
                       <th>Thao tác</th>
                     </tr>
@@ -360,12 +339,9 @@ const AdminPage = () => {
                       filteredAppointments.map((apt) => (
                         <tr 
                           key={apt.id} 
-                          onClick={(e) => {
-                            // Don't trigger if clicking buttons
-                            if (!e.target.closest('button')) {
-                              setSelectedAppointment(apt);
-                              setShowPopup(true);
-                            }
+                          onClick={() => {
+                            setSelectedAppointment(apt);
+                            setShowPopup(true);
                           }}
                           style={{ cursor: 'pointer' }}
                         >
@@ -374,22 +350,23 @@ const AdminPage = () => {
                           <td>{apt.patientName}</td>
                           <td>{formatTime(apt.appointment_time)}</td>
                           <td>{formatDate(apt.appointment_date)}</td>
+                          <td>{apt.nurse_id || 'N/A'}</td>
                           <td>{getStatusBadge(apt.status)}</td>
                           <td>
                             <div className="action-buttons">
                               {apt.status === 'pending' && (
                                 <button
                                   className="btn-action btn-confirm"
-                                  onClick={() => handleStatusChange(apt.id, 'confirmed')}
+                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'nurseConfirmed'); }}
                                   disabled={loading}
                                 >
                                   <i className="fas fa-check"></i> Xác nhận
                                 </button>
                               )}
-                              {apt.status === 'confirmed' && (
+                              {apt.status === 'nurseConfirmed' && (
                                 <button
                                   className="btn-action btn-complete"
-                                  onClick={() => handleStatusChange(apt.id, 'completed')}
+                                  onClick={(e) => { e.stopPropagation(); handleStatusChange(apt.id, 'completed'); }}
                                   disabled={loading}
                                 >
                                   <i className="fas fa-check-double"></i> Hoàn thành
@@ -414,7 +391,7 @@ const AdminPage = () => {
       <Footer />
       {/* Appointment Details Popup */}
       {showPopup && selectedAppointment && (
-        <div className="appointment-popup" id="appointmentPopup" style={{ display: 'block' }}>
+        <div className="appointment-popup active" id="appointmentPopup">
           <div className="appointment-popup-content">
             <button
               className="close-popup"
@@ -425,14 +402,13 @@ const AdminPage = () => {
             </button>
             <h2>Chi tiết lịch hẹn</h2>
             <div id="appointmentDetails">
-              <p><strong>ID:</strong> {selectedAppointment.id}</p>
-              <p><strong>Bệnh nhân:</strong> {selectedAppointment.patientName}</p>
+              <p><strong>Mã lịch hẹn:</strong> {selectedAppointment.id}</p>
+              <p><strong>Mã bệnh nhân:</strong> {selectedAppointment.patient_id}</p>
+              <p><strong>Tên bệnh nhân:</strong> {selectedAppointment.patientName}</p>
+              <p><strong>Giờ hẹn:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
+              <p><strong>Ngày hẹn:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
               <p><strong>Số điện thoại:</strong> {selectedAppointment.phone}</p>
-              <p><strong>Email:</strong> {selectedAppointment.email}</p>
-              <p><strong>Ngày khám:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
-              <p><strong>Giờ khám:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
-              <p><strong>Lý do:</strong> {selectedAppointment.reason}</p>
-              <p><strong>Ghi chú:</strong> {selectedAppointment.notes || 'Không có'}</p>
+              <p><strong>Lý do tái khám:</strong> {selectedAppointment.reason || "Không có"}</p>
               <p><strong>Trạng thái:</strong> {getStatusBadge(selectedAppointment.status)}</p>
             </div>
             <div className="popup-actions">
@@ -440,7 +416,7 @@ const AdminPage = () => {
                 <>
                   <button
                     className="btn btn-confirm"
-                    onClick={() => handleStatusChange(selectedAppointment.id, 'confirmed')}
+                    onClick={() => handleStatusChange(selectedAppointment.id, 'nurseConfirmed')}
                     disabled={loading}
                   >
                     <i className="fas fa-check"></i> Xác nhận
@@ -454,7 +430,7 @@ const AdminPage = () => {
                   </button>
                 </>
               )}
-              {selectedAppointment.status === 'confirmed' && (
+              {selectedAppointment.status === 'nurseConfirmed' && (
                 <button
                   className="btn btn-complete"
                   onClick={() => handleStatusChange(selectedAppointment.id, 'completed')}

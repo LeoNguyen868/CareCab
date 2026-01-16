@@ -39,7 +39,6 @@ const Profile = () => {
           phone_number: userData.phone_number
         });
         setLoading(false);
-        return;
       }
 
       // Fetch from API
@@ -75,7 +74,9 @@ const Profile = () => {
 
   const formatGender = (gender) => {
     if (!gender) return 'Chưa cập nhật';
-    return gender === 'M' ? 'Nam' : gender === 'F' ? 'Nữ' : 'Khác';
+    if (gender === 'male' || gender === 'M') return 'Nam';
+    if (gender === 'female' || gender === 'F') return 'Nữ';
+    return 'Khác';
   };
 
   const handleEditProfile = () => {

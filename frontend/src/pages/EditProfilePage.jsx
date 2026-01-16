@@ -78,14 +78,8 @@ const EditProfilePage = () => {
       // Prepare data for API
       const submitData = { ...formData };
       
-      // Format date as DD/MM/YYYY for the API
-      if (submitData.date_of_birth) {
-        const date = new Date(submitData.date_of_birth);
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        submitData.date_of_birth = `${day}/${month}/${year}`;
-      }
+      // Ensure date_of_birth is in YYYY-MM-DD format (already set by input type="date")
+      // No manual conversion needed if it matches the API expectation.
 
       const response = await fetch(`http://localhost:8000/users/profile/${userId}`, {
         method: 'PUT',
@@ -100,7 +94,7 @@ const EditProfilePage = () => {
         const updatedData = await response.json();
         localStorage.setItem('userProfile', JSON.stringify(updatedData));
         alert('Cập nhật hồ sơ thành công!');
-        navigate('/profile');
+        navigate('/home/profile');
       } else {
         const error = await response.json();
         alert(error.message || 'Không thể cập nhật hồ sơ. Vui lòng thử lại.');
@@ -154,9 +148,9 @@ const EditProfilePage = () => {
                 onChange={handleChange}
               >
                 <option value="">Chọn giới tính</option>
-                <option value="M">Nam</option>
-                <option value="F">Nữ</option>
-                <option value="O">Khác</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
               </select>
             </div>
             <div className="form-group">
@@ -212,7 +206,7 @@ const EditProfilePage = () => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/home/profile')}
             >
               Hủy
             </button>

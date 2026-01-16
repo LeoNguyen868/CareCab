@@ -65,20 +65,6 @@ body {
     gap: 0.5rem;
 }
 
-/* Booking Form Styles */
-.booking-container {
-    padding: 8rem 2rem 4rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.booking-form {
-    background: var(--white);
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .form-dates {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -179,23 +165,6 @@ body {
 
 .note-group textarea::placeholder {
     color: #9ca3af;
-}
-
-/* Enhanced Booking Form Styles */
-.booking-container h2 {
-    color: var(--primary-color);
-    margin-bottom: 2rem;
-    text-align: center;
-    font-size: 1.8rem;
-}
-
-.booking-form {
-    background: var(--white);
-    padding: 2.5rem;
-    border-radius: 0.8rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: 0 auto;
 }
 
 .form-group {
@@ -337,10 +306,6 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .booking-container {
-        padding: 6rem 1rem 2rem;
-    }
-
     .time-popup-content {
         width: 95%;
         padding: 1rem;
@@ -454,14 +419,14 @@ body {
 /* Update profile container styles */
 .profile-container {
     max-width: 800px;
-    margin: 0 auto;
-    padding: 6rem 1rem 2rem;
+    margin: auto;
+    padding: 1rem 1rem 2rem;
     /* Increased top padding to account for fixed header */
 }
 
 /* Add styles for main content area */
 .main-content {
-    margin-top: 60px;
+    margin-top: 0px;
     /* Height of the header */
     min-height: calc(100vh - 60px);
 }

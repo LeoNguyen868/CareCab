@@ -24,13 +24,42 @@ class AppointmentListResponse(BaseModel):
     time: time
     status: str
     symptoms: str
+    patient_name: Optional[str] = None
+    patient_email: Optional[str] = None
+    patient_phone: Optional[str] = None
     
     class Config:
         orm_mode = True
 
 @router.get("/", response_model=List[AppointmentListResponse])
 async def get_all_appointments():
-    return await Appointment.all()
+    appointments = await Appointment.all().select_related("patient__user").prefetch_related("patient__user__profile")
+
+    results = []
+    for appt in appointments:
+        patient = appt.patient
+        user = patient.user
+        # user.profile is a ReverseRelation, which is iterable when prefetched
+        profiles = list(user.profile)
+        profile = profiles[0] if profiles else None
+
+        full_name = profile.full_name if profile else "N/A"
+        email = user.email
+        phone = profile.emergency_contact if profile else "N/A"
+
+        results.append(AppointmentListResponse(
+            id=appt.id,
+            patient_id=appt.patient_id,
+            date=appt.date,
+            time=appt.time,
+            status=appt.status,
+            symptoms=appt.symptoms,
+            patient_name=full_name,
+            patient_email=email,
+            patient_phone=phone
+        ))
+
+    return results
 
 @router.post("/available-nurses")
 async def get_available_nurses(availability: AvailabilityCheck):

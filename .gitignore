@@ -41,4 +41,7 @@ Thumbs.db
 
 # Turtle
 turtle-build/
-  
+
+# Python
+__pycache__/
+*.pyc
