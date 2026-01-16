@@ -50,7 +50,7 @@ const Header = () => {
         <header className="header">
             <nav className="nav-container">
                 <div className="logo">
-                    <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit', gap: '0.5rem' }}>
+                    <Link to={user ? "/home" : "/"} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit', gap: '0.5rem' }}>
                         <img src="/assets/images/logo.png" alt="CareCab Logo" />
                         <h1>CareCab</h1>
                     </Link>

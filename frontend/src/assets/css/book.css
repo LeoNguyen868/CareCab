@@ -13,7 +13,7 @@
 }
 
 .booking-container {
-    padding: 8rem 2rem 4rem;
+    padding: 4rem 2rem 4rem;
     max-width: 800px;
     margin: 0 auto;
 }
@@ -269,7 +269,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .booking-container {
-        padding: 6rem 1rem 2rem;
+        padding: 2rem 1rem 2rem;
     }
     
     .time-popup-content {
