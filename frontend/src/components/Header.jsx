@@ -74,7 +74,7 @@ const Header = () => {
 
                 <div className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
                     {!['/home', '/admin','/appointments','/profile' ,'/booking'].includes(location.pathname) && (
-                        <Link to="/welcome" className="nav-link btn btn-login" onClick={() => setIsMenuOpen(false)}>Trang chủ</Link>
+                        <Link to="/home" className="nav-link btn btn-login" onClick={() => setIsMenuOpen(false)}>Trang chủ</Link>
                     )}
                     
                     {user ? (

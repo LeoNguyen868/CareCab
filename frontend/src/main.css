@@ -454,14 +454,14 @@ body {
 /* Update profile container styles */
 .profile-container {
     max-width: 800px;
-    margin: 0 auto;
-    padding: 6rem 1rem 2rem;
+    margin: auto;
+    padding: 1rem 1rem 2rem;
     /* Increased top padding to account for fixed header */
 }
 
 /* Add styles for main content area */
 .main-content {
-    margin-top: 60px;
+    margin-top: 0px;
     /* Height of the header */
     min-height: calc(100vh - 60px);
 }
