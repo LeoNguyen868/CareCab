@@ -29,6 +29,10 @@ async def change_password(change_password: ChangePassword):
     user = await User.get_or_none(email=change_password.email)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(change_password.old_password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Incorrect old password")
+
     user.password_hash = get_password_hash(change_password.new_password)
     await user.save()
     return {"message": "Password changed successfully"}

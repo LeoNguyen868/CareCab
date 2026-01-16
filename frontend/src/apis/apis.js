@@ -92,10 +92,11 @@ export const otp = async (email1) => {
   }
 };
 
-export const changePassword = async (email, newPassword) => {
+export const changePassword = async (email, oldPassword, newPassword) => {
   try {
     const response = await api.post('/auth/change_password', {
       email: email,
+      old_password: oldPassword,
       new_password: newPassword
     });
     return response.data;
