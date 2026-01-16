@@ -52,6 +52,23 @@ const BookPage = () => {
         }
     }, []);
 
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setShowTimePopup(false);
+                setSelectedTimeSlot(null);
+            }
+        };
+
+        if (showTimePopup) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showTimePopup]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
