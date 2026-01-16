@@ -19,6 +19,7 @@ from Routers.user_router import router as user_router
 from Routers.auth_router import router as auth_router
 from Routers.appointment_router import router as appointment_router
 from Routers.patient_router import router as patient_router
+from Routers.room_router import router as room_router
 
 # Allow FastAPI to run in notebook
 #nest_asyncio.apply()
@@ -71,10 +72,11 @@ app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(appointment_router, prefix="/appointments", tags=["Appointments"])
 app.include_router(patient_router, prefix="/patients", tags=["Patients"])
+app.include_router(room_router, prefix="/rooms", tags=["Rooms"])
 
 # Run the server if file is run directly 
 if __name__ == "__main__":
     import os
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)
 

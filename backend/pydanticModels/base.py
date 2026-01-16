@@ -148,3 +148,46 @@ class NotificationOut(NotificationBase):
 
     class Config:
         orm_mode = True
+
+# Room related models
+class RoomBase(BaseModel):
+    room_name: str
+    room_number: Optional[str] = None
+    description: Optional[str] = None
+    is_available: bool = True
+    status: str = "available"
+
+class RoomCreate(RoomBase):
+    pass
+
+class RoomUpdate(BaseModel):
+    room_name: Optional[str]
+    room_number: Optional[str]
+    description: Optional[str]
+    is_available: Optional[bool]
+    status: Optional[str]
+
+class RoomOut(RoomBase):
+    room_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+# RoomAppointment related models
+class RoomAppointmentBase(BaseModel):
+    room_id: int
+    appointment_id: int
+    notes: Optional[str] = None
+
+class RoomAppointmentCreate(RoomAppointmentBase):
+    pass
+
+class RoomAppointmentOut(RoomAppointmentBase):
+    id: int
+    assigned_at: datetime
+    released_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True

@@ -58,13 +58,13 @@ async def get_available_nurses(availability: AvailabilityCheck):
 
     # First get all busy nurse IDs
     busy_nurses = await Appointment.filter(
-        date=availability.date,
-        time=availability.time,
-        status__in=[
-            AppointmentStatus.PENDING,
-            AppointmentStatus.NURSE_CONFIRMED,
-            AppointmentStatus.STARTED
-        ]
+        Q(date=availability.date) &
+        Q(time=availability.time) &
+        (
+            Q(status=AppointmentStatus.PENDING.value) |
+            Q(status=AppointmentStatus.NURSE_CONFIRMED.value) |
+            Q(status=AppointmentStatus.STARTED.value)
+        )
     ).values_list('nurse_id', flat=True)
     
     # Then query available nurses
@@ -111,13 +111,13 @@ async def check_timeslot(availability: AvailabilityCheck):
     
     # 1. Get all busy nurse IDs at that time
     busy_nurses = await Appointment.filter(
-        date=availability.date,
-        time=availability.time,
-        status__in=[
-            AppointmentStatus.PENDING,
-            AppointmentStatus.NURSE_CONFIRMED,
-            AppointmentStatus.STARTED
-        ]
+        Q(date=availability.date) &
+        Q(time=availability.time) &
+        (
+            Q(status=AppointmentStatus.PENDING.value) |
+            Q(status=AppointmentStatus.NURSE_CONFIRMED.value) |
+            Q(status=AppointmentStatus.STARTED.value)
+        )
     ).values_list('nurse_id', flat=True)
     
     # 2. Count available nurses who are NOT in the busy list
@@ -184,16 +184,16 @@ async def create_appointment(appointment: AppointmentCreate):
         )
     
     # Check for scheduling conflicts
-    existing_appointment = await Appointment.get_or_none(
-        nurse_id=appointment.nurse_id,
-        date=appointment.date,
-        time=appointment.time,
-        status__in=[
-            AppointmentStatus.PENDING,
-            AppointmentStatus.NURSE_CONFIRMED,
-            AppointmentStatus.STARTED
-        ]
-    )
+    existing_appointment = await Appointment.filter(
+        Q(nurse_id=appointment.nurse_id) &
+        Q(date=appointment.date) &
+        Q(time=appointment.time) &
+        (
+            Q(status=AppointmentStatus.PENDING.value) |
+            Q(status=AppointmentStatus.NURSE_CONFIRMED.value) |
+            Q(status=AppointmentStatus.STARTED.value)
+        )
+    ).first()
     if existing_appointment:
         raise HTTPException(
             status_code=400,
@@ -363,12 +363,12 @@ async def get_patient_appointments(patient_id: int):
 async def get_upcoming_appointments(patient_id: int):
     today = datetime.now().date()
     appointments = await Appointment.filter(
-        patient_id=patient_id,
-        date__gte=today,
-        status__in=[
-            AppointmentStatus.PENDING,
-            AppointmentStatus.NURSE_CONFIRMED
-        ]
+        Q(patient_id=patient_id) &
+        Q(date__gte=today) &
+        (
+            Q(status=AppointmentStatus.PENDING.value) |
+            Q(status=AppointmentStatus.NURSE_CONFIRMED.value)
+        )
     ).order_by('date', 'time')
     return appointments
 

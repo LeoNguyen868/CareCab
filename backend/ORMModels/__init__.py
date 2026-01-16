@@ -9,8 +9,9 @@ load_dotenv()
 from ORMModels.users import *
 from ORMModels.appointments import *
 from ORMModels.notification import *
+from ORMModels.rooms import *
 # List all models for easy access
-models = [User, UserProfile, Nurse, Patient, Appointment, Notification]
+models = [User, UserProfile, Nurse, Patient, Appointment, Notification, Room, RoomAppointment]
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -18,7 +19,7 @@ async def init_orm(force_recreate=False):
     await Tortoise.init(
         db_url=DATABASE_URL,
         modules={
-            'models': ['ORMModels.users', 'ORMModels.appointments', 'ORMModels.notification']
+            'models': ['ORMModels.users', 'ORMModels.appointments', 'ORMModels.notification', 'ORMModels.rooms']
         }
     )
     if force_recreate:

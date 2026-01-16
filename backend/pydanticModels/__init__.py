@@ -21,8 +21,17 @@ from .base import (
     AppointmentOut,
     NotificationBase,
     NotificationCreate,
+    NotificationCreate,
     NotificationOut,
-    ChangePassword
+    ChangePassword,
+    # Room models
+    RoomBase,
+    RoomCreate,
+    RoomUpdate,
+    RoomOut,
+    RoomAppointmentBase,
+    RoomAppointmentCreate,
+    RoomAppointmentOut
 )
 
 __all__ = [
@@ -49,5 +58,13 @@ __all__ = [
     "NotificationBase",
     "NotificationCreate",
     "NotificationOut",
-    "ChangePassword"
+    "ChangePassword",
+    # Room models
+    "RoomBase",
+    "RoomCreate",
+    "RoomUpdate",
+    "RoomOut",
+    "RoomAppointmentBase",
+    "RoomAppointmentCreate",
+    "RoomAppointmentOut"
 ]
