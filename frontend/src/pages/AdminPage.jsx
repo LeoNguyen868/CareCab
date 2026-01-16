@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../assets/css/admin.css';
@@ -229,7 +230,17 @@ const AdminPage = () => {
 
             <section className="welcome-section">
               <div className="welcome-header">
-                <h2>Quản lý lịch tái khám</h2>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h2>Quản lý lịch tái khám</h2>
+                  <div className="admin-actions">
+                    <Link to="/admin/rooms" className="btn btn-primary me-2">
+                      <i className="fas fa-door-open"></i> Quản lý phòng
+                    </Link>
+                    <Link to="/admin/room-assignment" className="btn btn-info text-white">
+                      <i className="fas fa-tasks"></i> Gán phòng
+                    </Link>
+                  </div>
+                </div>
                 
                 <div className="filters-row">
                   <div className="filters-group">

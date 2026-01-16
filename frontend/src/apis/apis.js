@@ -399,3 +399,127 @@ export const togglePatientSubscription = async (patientId) => {
   }
 };
 
+
+// Room Management APIs
+
+// 1.1. CRUD Operations cho Room
+export const getAllRooms = async (isAvailable = null) => {
+  try {
+    const url = isAvailable !== null 
+      ? `/rooms/?is_available=${isAvailable}`
+      : '/rooms/';
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getRoom = async (roomId) => {
+  try {
+    const response = await api.get(`/rooms/${roomId}`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const createRoom = async (roomData) => {
+  try {
+    const response = await api.post('/rooms/', roomData);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const updateRoom = async (roomId, roomData) => {
+  try {
+    const response = await api.put(`/rooms/${roomId}`, roomData);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const deleteRoom = async (roomId) => {
+  try {
+    const response = await api.delete(`/rooms/${roomId}`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+// 1.2. Room Assignment Operations
+export const assignRoomToAppointment = async (roomId, appointmentId, notes = '') => {
+  try {
+    const response = await api.post(`/rooms/${roomId}/assign`, {
+      appointment_id: appointmentId,
+      notes: notes
+    });
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const releaseRoom = async (roomId, appointmentId) => {
+  try {
+    const response = await api.post(`/rooms/${roomId}/release`, {
+      appointment_id: appointmentId
+    });
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+// 1.3. Query Operations
+export const getAvailableRooms = async (date = null, time = null) => {
+  try {
+    let url = '/rooms/available';
+    // If date/time params are needed by backend, append them here
+    // For now assuming simple available check or filter in getAllRooms(true) covers basic availability
+    // usage in frontend plan implies specific availability endpoint might be useful
+    // If endpoints differ from plan, adjust here.
+    // Based on plan: getAvailableRooms
+    if (date && time) {
+        url += `?date=${date}&time=${time}`;
+    }
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getRoomByAppointment = async (appointmentId) => {
+  try {
+    const response = await api.get(`/rooms/by-appointment/${appointmentId}`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getRoomAssignments = async (roomId, startDate = null, endDate = null, activeOnly = false) => {
+  try {
+    let url = `/rooms/${roomId}/assignments?active_only=${activeOnly}`;
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const getRoomStatus = async (roomId) => {
+  try {
+    const response = await api.get(`/rooms/${roomId}/status`);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error);
+  }
+};

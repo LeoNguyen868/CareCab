@@ -209,8 +209,8 @@ const Appointments = () => {
                                         }
                                     }}
                                 >
-                                    <p><strong>Ngày:</strong> {formatDate(apt.appointment_date)}</p>
-                                    <p><strong>Giờ:</strong> {formatTime(apt.appointment_time)}</p>
+                                    <p><strong>Ngày:</strong> {formatDate(apt.date)}</p>
+                                    <p><strong>Giờ:</strong> {formatTime(apt.time)}</p>
                                     <p><strong>Bác sĩ:</strong> {apt.doctor_name || 'Đang cập nhật'}</p>
                                     <p><strong>Trạng thái:</strong> <span className={`status-${apt.status}`}>{getStatusText(apt.status)}</span></p>
                                 </div>
@@ -252,6 +252,8 @@ const Appointments = () => {
                                     <p><strong>Bác sĩ:</strong> {selectedAppointment.doctor_name || 'Đang chờ xếp lịch'}</p>
                                     <p><strong>Triệu chứng:</strong> {selectedAppointment.symptoms || 'Không có'}</p>
                                     <p><strong>Ghi chú:</strong> {selectedAppointment.notes || 'Không có'}</p>
+                                    <p><strong>Phòng khám:</strong> {selectedAppointment.room_name || 'Chưa gán'}</p>
+                                    <p><strong>Số phòng:</strong> {selectedAppointment.room_number || 'N/A'}</p>
                                     
                                     <div className="popup-actions">
                                         {(selectedAppointment.status === 'pending' || selectedAppointment.status === 'confirmed') && (

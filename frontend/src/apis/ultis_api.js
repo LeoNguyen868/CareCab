@@ -64,5 +64,34 @@ export const generateEmptyUser = () => {
         phone_number: "",
         role: "patient"
     };
+
     return emptyUser;
 };
+
+export const generateEmptyRoom = () => {
+    return {
+      room_name: "",
+      room_number: "",
+      description: "",
+      is_available: true
+    };
+  };
+  
+  export const generateEmptyRoomAssignment = (roomId, appointmentId) => {
+    return {
+      room_id: roomId,
+      appointment_id: appointmentId,
+      assigned_at: new Date().toISOString(),
+      notes: ""
+    };
+  };
+  
+  export const getRoomStatusText = (status) => {
+    const statusMap = {
+      'available': 'Sẵn sàng',
+      'occupied': 'Đang sử dụng',
+      'cleaning': 'Đang dọn dẹp',
+      'maintenance': 'Đang bảo trì'
+    };
+    return statusMap[status] || status;
+  };
