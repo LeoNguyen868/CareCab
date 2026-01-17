@@ -27,8 +27,8 @@ const RoomAssignment = () => {
             // Filter for NURSE_CONFIRMED as per plan
             // Also maybe show assigned ones? "Show current room nếu đã được gán"
             const relevantAppointments = data.filter(apt => 
-                apt.status === 'confirmed' ||  // Assuming 'confirmed' maps to NURSE_CONFIRMED logic in this context
-                apt.status === 'assigned'      // If there is such status
+                apt.status === 'nurseConfirmed' ||  // Use backend enum value
+                apt.status === 'started'
             );
             
             // We might need to enrich this with room info if valuable

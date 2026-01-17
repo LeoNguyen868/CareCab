@@ -43,7 +43,7 @@ const RoomsManagement = () => {
     const handleDelete = async (room) => {
         if (window.confirm(`Bạn có chắc muốn xóa phòng ${room.room_name}?`)) {
             try {
-                await deleteRoom(room.id);
+                await deleteRoom(room.room_id || room.id);  // Support both fields
                 fetchRooms();
             } catch (err) {
                 alert(err.message || 'Không thể xóa phòng');
@@ -55,7 +55,7 @@ const RoomsManagement = () => {
         e.preventDefault();
         try {
             if (currentRoom) {
-                await updateRoom(currentRoom.id, formData);
+                await updateRoom(currentRoom.room_id || currentRoom.id, formData);
             } else {
                 await createRoom(formData);
             }

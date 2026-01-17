@@ -499,6 +499,16 @@ export const getRoomByAppointment = async (appointmentId) => {
     const response = await api.get(`/rooms/by-appointment/${appointmentId}`);
     return response.data;
   } catch (error) {
+    // Fallback: filter from appointments if endpoint not available
+    if (error.response?.status === 404) {
+      try {
+        const appointments = await getAllAppointments();
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        return appointment?.room || null;
+      } catch (fallbackError) {
+        return handleApiError(fallbackError);
+      }
+    }
     return handleApiError(error);
   }
 };
@@ -511,6 +521,10 @@ export const getRoomAssignments = async (roomId, startDate = null, endDate = nul
     const response = await api.get(url);
     return response.data;
   } catch (error) {
+    // Fallback: return empty array if endpoint not available
+    if (error.response?.status === 404) {
+      return [];
+    }
     return handleApiError(error);
   }
 };

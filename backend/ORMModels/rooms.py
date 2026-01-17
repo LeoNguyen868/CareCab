@@ -11,6 +11,19 @@ class Room(models.Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
+    @property
+    def id(self):
+        """Alias for frontend compatibility"""
+        return self.room_id
+
+    def save(self, *args, **kwargs):
+        # Auto-sync is_available with status
+        if self.status == RoomStatus.AVAILABLE:
+            self.is_available = True
+        elif self.status in [RoomStatus.OCCUPIED, RoomStatus.CLEANING, RoomStatus.MAINTENANCE]:
+            self.is_available = False
+        super().save(*args, **kwargs)
+
     class Meta:
         table = "rooms"
         indexes = [

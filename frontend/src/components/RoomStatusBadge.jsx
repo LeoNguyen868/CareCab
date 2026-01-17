@@ -13,7 +13,7 @@ const RoomStatusBadge = ({ status }) => {
       case 'maintenance':
         return 'status-maintenance';
       default:
-        return 'status-maintenance'; // Default to gray if unknown
+        return 'status-available'; // Default to available instead of maintenance
     }
   };
 

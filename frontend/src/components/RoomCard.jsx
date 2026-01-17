@@ -9,7 +9,7 @@ const RoomCard = ({ room, onEdit, onDelete, onAssign, showActions = true }) => {
           <h3>{room.room_name}</h3>
           <div className="text-muted small">Phòng số: {room.room_number || 'N/A'}</div>
         </div>
-        <RoomStatusBadge status={room.is_available ? 'available' : 'occupied'} /> 
+        <RoomStatusBadge status={room.status || (room.is_available ? 'available' : 'occupied')} /> 
         {/* Note: Backend needs to support specific statuses like cleaning/maintenance explicitly if more than boolean. 
             For now, mapping boolean is_available to available/occupied. 
             If backend adds status field, use room.status */}

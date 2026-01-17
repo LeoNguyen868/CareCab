@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, constr, validator
 from datetime import datetime, date, time
 from typing import Optional, List, Any
 
@@ -170,11 +170,16 @@ class RoomUpdate(BaseModel):
 
 class RoomOut(RoomBase):
     room_id: int
+    id: int  # Add alias for frontend
     created_at: datetime
     updated_at: datetime
 
     class Config:
         orm_mode = True
+        
+    @validator('id', pre=True, always=True)
+    def set_id_alias(cls, v, values):
+        return values.get('room_id', v)
 
 # RoomAppointment related models
 class RoomAppointmentBase(BaseModel):

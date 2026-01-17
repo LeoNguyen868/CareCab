@@ -133,9 +133,59 @@ async def release_room(room_id: int, request: ReleaseRoomRequest):
 
 # --- Query Operations ---
 
+@router.get("/available", response_model=List[RoomOut])
+async def get_available_rooms(date: Optional[date] = None, time: Optional[time] = None):
+    query = Room.filter(is_available=True)
+    
+    if date and time:
+        # Check conflicts with existing assignments
+        datetime_str = f"{date} {time}"
+        target_datetime = datetime.fromisoformat(datetime_str)
+        
+        # Exclude rooms with assignments at the same time
+        conflicting_room_ids = await RoomAppointment.filter(
+            assigned_at__lte=target_datetime,
+            released_at__gte=target_datetime
+        ).values_list('room_id', flat=True)
+        
+        if conflicting_room_ids:
+            query = query.exclude(room_id__in=conflicting_room_ids)
+    
+    return await query
+
 @router.get("/available/now", response_model=List[RoomOut])
 async def get_available_rooms_now():
     return await Room.filter(is_available=True)
+
+@router.get("/by-appointment/{appointment_id}", response_model=RoomOut)
+async def get_room_by_appointment(appointment_id: int):
+    assignment = await RoomAppointment.filter(
+        appointment_id=appointment_id,
+        released_at__isnull=True
+    ).prefetch_related('room').first()
+    
+    if not assignment:
+        raise HTTPException(status_code=404, detail="No room assigned to this appointment")
+    
+    return assignment.room
+
+@router.get("/{room_id}/assignments", response_model=List[RoomAppointmentOut])
+async def get_room_assignments(
+    room_id: int, 
+    start_date: Optional[date] = None, 
+    end_date: Optional[date] = None, 
+    active_only: bool = False
+):
+    query = RoomAppointment.filter(room_id=room_id).prefetch_related('appointment')
+    
+    if start_date:
+        query = query.filter(assigned_at__gte=start_date)
+    if end_date:
+        query = query.filter(assigned_at__lte=end_date)
+    if active_only:
+        query = query.filter(released_at__isnull=True)
+    
+    return await query
 
 @router.get("/{room_id}/status")
 async def get_room_status(room_id: int):
@@ -148,9 +198,16 @@ async def get_room_status(room_id: int):
         released_at__isnull=True
     ).prefetch_related('appointment').first()
     
+    # Get next appointment
+    next_assignment = await RoomAppointment.filter(
+        room_id=room_id,
+        assigned_at__gt=datetime.now()
+    ).order_by('assigned_at').prefetch_related('appointment').first()
+    
     return {
         "room_id": room.room_id,
         "is_available": room.is_available,
         "status": room.status,
-        "current_appointment": current_assignment.appointment if current_assignment else None
+        "current_appointment": current_assignment.appointment if current_assignment else None,
+        "next_appointment": next_assignment.appointment if next_assignment else None
     }
